@@ -19,5 +19,9 @@ class UserController extends Controller
     {
         return view('frontend/users/edit');
     }
+      public function edit_post()
+    {
+        return view('frontend/users/edit');
+    }
 
 }
