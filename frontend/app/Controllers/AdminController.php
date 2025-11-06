@@ -8,7 +8,7 @@ class AdminController extends Controller
 {
     public function register()
     {
-        return view('admin/register');
+        return view('register');
     }
 
     public function registerPost()
@@ -36,7 +36,7 @@ class AdminController extends Controller
         $data = json_decode($response->getBody(), true);
 
         if (isset($data['success']) && $data['success']) {
-            return redirect()->to('/admin/login')->with('success', 'Registration successful! Please login.');
+            return redirect()->to('/login')->with('success', 'Registration successful! Please login.');
         } else {
             return redirect()->back()->with('error', 'Registration failed');
         }
@@ -49,7 +49,7 @@ class AdminController extends Controller
 
     public function login()
     {
-        return view('admin/login');
+        return view('login');
     }
 
     public function loginPost()
@@ -77,7 +77,7 @@ class AdminController extends Controller
 
             if (isset($result['token'])) {
                 session()->set('admin_token', $result['token']);
-                return redirect()->to('/admin/dashboard')->with('success', 'Login successful');
+                return redirect()->to('/')->with('success', 'Login successful');
             } else {
                 return redirect()->back()->with('error', 'Invalid credentials');
             }
@@ -87,18 +87,10 @@ class AdminController extends Controller
         }
     }
 
-    public function dashboard()
-    {
-        if (!session()->has('admin_token')) {
-            return redirect()->to('/admin/login')->with('error', 'Please login first');
-        }
-
-        return view('admin/dashboard');
-    }
 
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('/admin/login')->with('success', 'Logged out successfully');
+        return redirect()->to('/login')->with('success', 'Logged out successfully');
     }
 }
