@@ -16,6 +16,7 @@
     <link href="<?= base_url('assets/vendors/DataTables/datatables.min.css') ?>" rel="stylesheet" />
     <!-- THEME STYLES -->
     <link href="<?= base_url('assets/css/main.min.css') ?>" rel="stylesheet">
+   
 </head>
 
 <body class="fixed-navbar">
@@ -58,6 +59,8 @@
 <script src="<?= base_url('assets/js/app.min.js') ?>"></script>
 <script src="<?= base_url('assets/js/scripts/dashboard_1_demo.js') ?>"></script>
 <script src="<?= base_url('assets/vendors/DataTables/datatables.min.js') ?>" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
         $(function() {
             $('#example-table').DataTable({

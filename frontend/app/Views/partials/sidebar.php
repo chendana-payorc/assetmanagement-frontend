@@ -9,16 +9,7 @@
                         </a>
                     </li>
                     <li class="heading">Asset Management</li>
-                    <li>
-                        <a href="<?= base_url('department-list') ?>"><i class="sidebar-item-icon fa fa-file-text"></i>
-                            <span class="nav-label">Department</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?= base_url('designation-list') ?>"><i class="sidebar-item-icon fa fa-envelope"></i>
-                            <span class="nav-label">Designation</span>
-                        </a>
-                    </li>
+                   
                     <li>
                         <a href=""><i class="sidebar-item-icon fa fa-calendar"></i>
                             <span class="nav-label">Asset Details</span>
@@ -28,6 +19,16 @@
                     <li>
                         <a href="<?= base_url('users-list') ?>"><i class="sidebar-item-icon fa fa-user"></i>
                             <span class="nav-label">Admin List</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('department-list') ?>"><i class="sidebar-item-icon fa fa-file-text"></i>
+                            <span class="nav-label">Department</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('designation-list') ?>"><i class="sidebar-item-icon fa fa-envelope"></i>
+                            <span class="nav-label">Designation</span>
                         </a>
                     </li>
                    
