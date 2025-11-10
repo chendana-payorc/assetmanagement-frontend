@@ -1,4 +1,12 @@
 <?= $this->extend('layouts/main') ?>
+<style>
+  .iti {
+    width: 100%;
+  }
+  .iti input {
+    padding-left: 52px !important; /* ensures flag area doesn't overlap text */
+  }
+</style>
 
 <?= $this->section('content') ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -53,37 +61,28 @@
                 <label class="required">Name</label>
                 <input class="form-control" type="text" name="name" placeholder="Enter Name">
             </div>
-        <div class="row">
-        <div class="col-sm-6 form-group">
-                <label>Role</label>
-                <input class="form-control" type="text" name="role" placeholder="Enter Role">
+            <div class="row">
+                <div class="col-sm-6 form-group">
+                    <label>Designation</label>
+                    <select class="form-select" name="designation_id" id="designationSelect" required>
+                        <option value="">Select Designation</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label>Department</label>
+                    <select class="form-select" name="department_id" id="departmentSelect" required>
+                        <option value="">Select Department</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-sm-6 form-group">
-                <label>Department</label>
-                <input class="form-control" type="text" name="department" placeholder="Enter Department">
-            </div>
-        </div>
-
            <div class="form-group">
                 <label>Email</label>
                 <input class="form-control" type="email" name="email" placeholder="Enter Email">
             </div>
             <div class="form-group">
-    <label>Phone</label>
-    <div class="input-group">
-        <span class="input-group-text" style="width: 80px;">
-            <select class="form-select border-0" name="country_code" style="padding: 0; width: 100%;">
-                <option value="+91" selected>+91</option>
-                <option value="+1">+1</option>
-                <option value="+44">+44</option>
-                <option value="+61">+61</option>
-                <option value="+971">+971</option>
-                <option value="+81">+81</option>
-            </select>
-        </span>
-        <input class="form-control" type="text" name="phone_number" placeholder="Enter Number">
-    </div>
-</div>
+              <label for="phone">Phone</label>
+              <input id="phone" type="tel" name="phone_number" class="form-control" placeholder="Enter phone number">
+            </div>
 
             <div class="form-group">
                 <label>Password</label>
@@ -97,23 +96,79 @@
     </form>
   </div>
 </div>
-    <script>
-$('#createUserForm').on('submit', function(e){
-    e.preventDefault();
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    
+$(document).ready(function() {
+
     $.ajax({
-        url: '<?= base_url('users-store') ?>', 
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response){
-            alert('User added successfully!');
-            $('#addUserCanvas').offcanvas('hide');
-            location.reload();
+        url: '<?= base_url('/designations') ?>',
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log(response);
+            if (response.success && response.data) {
+                $('#designationSelect').empty().append('<option value="">Select Designation</option>');
+                $.each(response.data, function(index, item) {
+                    $('#designationSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
         },
-        error: function(){
-            alert('Something went wrong!');
+        error: function() {
+            console.error('Failed to load designations');
         }
     });
+
+    // Fetch departments
+    $.ajax({
+        url: '<?= base_url('/departments') ?>',
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log(response);
+            if (response.success && response.data) {
+                $('#departmentSelect').empty().append('<option value="">Select Department</option>');
+                $.each(response.data, function(index, item) {
+                    $('#departmentSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
+        },
+        error: function() {
+            console.error('Failed to load departments');
+        }
+    });
+
+    // Submit form
+    $('#createUserForm').on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+            url: '<?= base_url('users-store') ?>', 
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response){
+                alert('User added successfully!');
+                $('#addUserCanvas').offcanvas('hide');
+                location.reload();
+            },
+            error: function(){
+                alert('Something went wrong!');
+            }
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+  const input = document.querySelector("#phone");
+  window.intlTelInput(input, {
+    initialCountry: "in",
+    preferredCountries: ["in", "us", "gb", "au", "ae", "jp"],
+    separateDialCode: true,
+    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+  });
+});
+
 });
 </script>
+
+
 <?= $this->endSection() ?>
 

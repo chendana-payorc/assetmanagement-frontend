@@ -13,6 +13,9 @@ $routes->post('register', 'AdminController::registerPost');
 $routes->get('logout', 'AdminController::logout');
 
 $routes->get('/users-list', 'UserController::index');
+$routes->get('/designations', 'UserController::getDesignations');
+$routes->get('/departments', 'UserController::getDepartments');
+
 
 $routes->get('department-list', 'DepartmentController::index');
 $routes->post('/department-store', 'DepartmentController::store');
