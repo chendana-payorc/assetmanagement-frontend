@@ -149,7 +149,7 @@ $('.editBtn').on('click', function() {
 // 🔴 Delete Department
 $('.deleteBtn').on('click', function() {
     let id = $(this).data('id');
-
+   //console.log(id);
     Swal.fire({
         title: 'Are you sure?',
         text: "This designation will be permanently deleted.",
@@ -162,9 +162,10 @@ $('.deleteBtn').on('click', function() {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '<?= base_url('department-delete') ?>/' + id,
+                url: '<?= base_url('designation-delete') ?>/' + id,
                 method: 'DELETE',
                 success: function(response) {
+                    console.log(response);
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
@@ -191,7 +192,7 @@ $('[data-bs-target="#addDepartmentCanvas"]').on('click', function() {
     $('#dept_status').val('1'); // default active
     $('#dept_status').closest('.form-group').hide(); // hide status dropdown on create
 
-    $('#addDepartmentCanvasLabel').text('Create Department');
+    $('#addDepartmentCanvasLabel').text('Create Designation');
     $('#submitBtn').text('Submit');
 });
 

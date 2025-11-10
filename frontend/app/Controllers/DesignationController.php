@@ -35,12 +35,12 @@ class DesignationController extends Controller
             $headers['Authorization'] = 'Bearer ' . $token;
         }
     
-        $response = $client->get('http://localhost:3000/api/designation/list', [
+        $response = $client->get($this->apiBaseUrl . '/list', [
             'headers' => $headers,
         ]);
     
         $result = json_decode($response->getBody(), true);
-        $departments = $result['data'] ?? []; // ✅ get only the data list
+        $designations = $result['data'] ?? []; 
     
         return view('frontend/designation-index', compact('designations'));
     }
@@ -112,31 +112,32 @@ class DesignationController extends Controller
         }
     }
 
-    // DELETE Department
-    public function delete($id)
-    {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-
-        try {
-            $client->delete($this->apiBaseUrl . '/delete/' . $id, [
-                'headers' => $headers
-            ]);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Designation deleted successfully'
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+     // DELETE Department
+     public function delete($id)
+     {
+        
+         $client = \Config\Services::curlrequest();
+         $token = session()->get('admin_token');
+         $headers = $this->headers;
+ 
+         if ($token) {
+             $headers['Authorization'] = 'Bearer ' . $token;
+         }
+ 
+         try {
+             $client->delete($this->apiBaseUrl . '/delete/' . $id, [
+                 'headers' => $headers
+             ]);
+ 
+             return $this->response->setJSON([
+                 'success' => true,
+                 'message' => 'Designation deleted successfully'
+             ]);
+         } catch (\Exception $e) {
+             return $this->response->setStatusCode(500)->setJSON([
+                 'success' => false,
+                 'error' => $e->getMessage()
+             ]);
+         }
+     }
 }
