@@ -17,9 +17,14 @@
     <!-- THEME STYLES -->
    <!-- THEME STYLES -->
 <link href="<?= base_url('assets/css/main.min.css') ?>" rel="stylesheet">
-
-<!-- PHONE INPUT PLUGIN CSS (Place at the END to override theme conflicts) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.min.css"/>
+<style>
+    .fa-angle-down:before {
+    content:none;
+}
+.page-sidebar ul li a {
+    text-decoration: none;
+}
+</style>
 </head>
 
 <body class="fixed-navbar">
@@ -64,7 +69,7 @@
 <script src="<?= base_url('assets/vendors/DataTables/datatables.min.js') ?>" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
 <script type="text/javascript">
         $(function() {
             $('#example-table').DataTable({

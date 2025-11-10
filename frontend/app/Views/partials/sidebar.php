@@ -11,7 +11,7 @@
                     <li class="heading">Asset Management</li>
                    
                     <li>
-                        <a href=""><i class="sidebar-item-icon fa fa-calendar"></i>
+                        <a href="<?= base_url('asset-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
                             <span class="nav-label">Asset Details</span>
                         </a>
                     </li>
