@@ -76,7 +76,36 @@ class AdminController extends Controller
             $result = json_decode($response->getBody(), true);
 
             if (isset($result['token'])) {
-                session()->set('admin_token', $result['token']);
+                $token = $result['token'];
+                session()->set('admin_token', $token);
+                session()->set('admin_email', $email);
+
+              
+                try {
+                    $listResponse = $client->get('http://localhost:3000/api/admin/list', [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'username' => env('API_USERNAME'),
+                            'password' => env('API_PASSWORD'),
+                            'Authorization' => 'Bearer ' . $token,
+                        ]
+                    ]);
+                    $listData = json_decode($listResponse->getBody(), true);
+                    $admins = $listData['data'] ?? [];
+                    $matched = null;
+                    foreach ($admins as $admin) {
+                        if (!empty($admin['email']) && strtolower($admin['email']) === strtolower($email)) {
+                            $matched = $admin;
+                            break;
+                        }
+                    }
+                    if ($matched && !empty($matched['name'])) {
+                        session()->set('admin_name', $matched['name']);
+                    }
+                } catch (\Exception $e) {
+                    // Swallow; name is optional for UI
+                }
+
                 return redirect()->to('/')->with('success', 'Login successful');
             } else {
                 return redirect()->back()->with('error', 'Invalid credentials');
@@ -87,6 +116,14 @@ class AdminController extends Controller
         }
     }
 
+    public function dashboard()
+    {
+        $token = session()->get('admin_token');
+        if (!$token) {
+            return redirect()->to('/login')->with('error', 'Please Login First');
+        } 
+        return view('frontend/dashboard');
+    }
 
     public function logout()
     {
