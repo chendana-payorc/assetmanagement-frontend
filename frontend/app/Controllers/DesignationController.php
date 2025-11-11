@@ -42,7 +42,7 @@ class DesignationController extends Controller
         $result = json_decode($response->getBody(), true);
         $designations = $result['data'] ?? []; 
     
-        return view('frontend/designation-index', compact('designations'));
+        return view('frontend/designation/designation-index', compact('designations'));
     }
     
 
@@ -66,7 +66,9 @@ class DesignationController extends Controller
                 ]
             ]);
 
-            return $this->response->setJSON([
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result ?: [
                 'success' => true,
                 'message' => 'Designation created successfully'
             ]);
@@ -92,7 +94,7 @@ class DesignationController extends Controller
         }
 
         try {
-            $client->put($this->apiBaseUrl . '/update/' . $id, [
+           $response= $client->put($this->apiBaseUrl . '/update/' . $id, [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
@@ -100,7 +102,9 @@ class DesignationController extends Controller
                 ]
             ]);
 
-            return $this->response->setJSON([
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result ?: [
                 'success' => true,
                 'message' => 'Designation updated successfully'
             ]);
