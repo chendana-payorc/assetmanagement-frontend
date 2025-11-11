@@ -54,16 +54,8 @@
                                 <td><?= esc($user['designation_name'] ?? '') ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-primary editBtn" 
-                                            data-id="<?= esc($user['id'] ?? '') ?>" 
-                                            data-name="<?= esc($user['name'] ?? $user['Name'] ?? '') ?>" 
-                                            data-email="<?= esc($user['email'] ?? '') ?>"
-                                            data-department-id="<?= esc($user['department_id'] ?? '') ?>"
-                                            data-department-name="<?= esc($user['department_name'] ?? '') ?>"
-                                            data-designation-id="<?= esc($user['designation_id'] ?? '') ?>"
-                                            data-designation-name="<?= esc($user['designation_name'] ?? '') ?>"
-                                            data-country-code="<?= esc($user['country_code'] ?? '') ?>"
-                                            data-phone-number="<?= esc($user['phone_number'] ?? '') ?>"
-                                    >
+                                        data-id="<?= esc($user['id'] ?? '') ?>" 
+                                        onclick="editRecord('<?= base_url('user-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
                                         <i class="fa fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= esc($user['id'] ?? '') ?>">
@@ -91,39 +83,55 @@
         <input type="hidden" id="userId">
        
             <div class="form-group">
-                <label class="required">Name</label>
+                <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
                 <input class="form-control" type="text" name="name" id="nameInput" placeholder="Enter Name">
             </div>
             <div class="row">
                 <div class="col-sm-6 form-group">
-                    <label>Designation</label>
+                    <label>Designation<span style="color:red;font-weight:700;">*</span></label>
                     <select class="form-select" name="designation_id" id="designationSelect" required>
                         <option value="">Select Designation</option>
                     </select>
                 </div>
                 <div class="col-sm-6 form-group">
-                    <label>Department</label>
+                    <label>Department<span style="color:red;font-weight:700;">*</span></label>
                     <select class="form-select" name="department_id" id="departmentSelect" required>
                         <option value="">Select Department</option>
                     </select>
                 </div>
             </div>
            <div class="form-group">
-                <label>Email</label>
+                <label>Email<span style="color:red;font-weight:700;">*</span></label>
                 <input class="form-control" type="email" name="email" id="emailInput" placeholder="Enter Email">
             </div>
             <div class="form-group">
-              <label for="phone">Mobile</label>
+              <label for="phone">Mobile<span style="color:red;font-weight:700;">*</span></label>
               <input id="phone" type="tel" name="phone_number" class="form-control" placeholder="Enter phone number">
               <input type="hidden" name="country_code" id="country_code">
             </div>
 
             <div class="form-group">
-                <label>Password</label>
+                <label>Password<span style="color:red;font-weight:700;">*</span></label>
                 <input class="form-control" type="password" name="password" id="passwordInput" placeholder="Enter Password">
             </div>
            
 
+        <div class="form-group mt-3">
+            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+        </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="editUserCanvas" aria-labelledby="editUserCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 id="editUserCanvasLabel">Update User</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form id="createUserForm">        
+        <div id="editFormData"></div>
         <div class="form-group mt-3">
             <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
         </div>
@@ -252,26 +260,48 @@ $.ajax({
     }
 });
 
-$('#createUserForm').on('submit', function(e){
+// Handle form submission for both add and edit forms
+$(document).on('submit', '#createUserForm', function(e){
     e.preventDefault();
    
+    const $form = $(this);
+    const $phoneInput = $form.find('#phone');
+    const $countryCodeInput = $form.find('#country_code');
+    
+    // Handle phone input - check if it's in edit form or add form
     try {
-        if (itiInstance) {
-            const selected = itiInstance.getSelectedCountryData();
-            $('#country_code').val(selected && selected.dialCode ? selected.dialCode : '');
+        let iti = null;
+        const isEditForm = $form.closest('#editUserCanvas').length > 0;
+        
+        if (isEditForm && window.editFormItiInstance) {
+            // Use the edit form's iti instance
+            iti = window.editFormItiInstance;
+        } else if (!isEditForm && itiInstance) {
+            // Use the add form's iti instance
+            iti = itiInstance;
+        }
+        
+        if (iti) {
+            const selected = iti.getSelectedCountryData();
+            $countryCodeInput.val(selected && selected.dialCode ? selected.dialCode : '');
           
             if (window.intlTelInputUtils) {
-                const national = itiInstance.getNumber(intlTelInputUtils.numberFormat.NATIONAL) || $('#phone').val();
+                const national = iti.getNumber(window.intlTelInputUtils.numberFormat.NATIONAL) || $phoneInput.val();
                 let digitsOnly = (national || '').replace(/\D/g, '');
-                // Many countries include a trunk '0' in national format; keep the last 10 digits
                 if (digitsOnly.length > 10) {
                     digitsOnly = digitsOnly.slice(-10);
                 }
-                // If exactly 11 and starts with 0, drop the leading 0
                 if (digitsOnly.length === 11 && digitsOnly.startsWith('0')) {
                     digitsOnly = digitsOnly.substring(1);
                 }
-                $('#phone').val(digitsOnly);
+                $phoneInput.val(digitsOnly);
+            }
+        } else {
+            // Fallback: use existing country code if available, or validate phone format
+            const phoneVal = ($phoneInput.val() || '').replace(/\D/g, '');
+            if (phoneVal.length > 10) {
+                // Keep last 10 digits
+                $phoneInput.val(phoneVal.slice(-10));
             }
         }
     } catch (err) {
@@ -279,9 +309,9 @@ $('#createUserForm').on('submit', function(e){
     }
 
     // Client-side validation
-    const nameVal = ($('#nameInput').val() || '').trim();
-    const emailVal = ($('#emailInput').val() || '').trim();
-    const phoneVal = ($('#phone').val() || '').trim();
+    const nameVal = ($form.find('#nameInput').val() || '').trim();
+    const emailVal = ($form.find('#emailInput').val() || '').trim();
+    const phoneVal = ($phoneInput.val() || '').trim();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -312,13 +342,13 @@ $('#createUserForm').on('submit', function(e){
         return;
     }
 
-    const userId = $('#userId').val();
+    const userId = $form.find('#userId').val();
     const requestUrl = userId ? `${updateUrl}/${userId}` : storeUrl;
 
     $.ajax({
         url: requestUrl,
         method: 'POST',
-        data: $(this).serialize(),
+        data: $form.serialize(),
         success: function(response){
             if (response.success) {
                 const successMessage = response.message || (userId ? 'User updated successfully!' : 'User added successfully!');
@@ -329,7 +359,10 @@ $('#createUserForm').on('submit', function(e){
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    const canvasEl = document.getElementById('addUserCanvas');
+                    // Close the appropriate canvas
+                    const isEditForm = $form.closest('#editUserCanvas').length > 0;
+                    const canvasId = isEditForm ? 'editUserCanvas' : 'addUserCanvas';
+                    const canvasEl = document.getElementById(canvasId);
                     const offcanvasInstance = bootstrap.Offcanvas.getInstance(canvasEl);
                     if (offcanvasInstance) {
                         offcanvasInstance.hide();
@@ -351,7 +384,7 @@ $('#createUserForm').on('submit', function(e){
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: xhr.responseJSON?.error || 'Something went wrong!'
+                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
             });
         }
     });
@@ -361,60 +394,8 @@ $('[data-bs-target="#addUserCanvas"]').on('click', function() {
     resetFormState();
 });
 
-$('.editBtn').on('click', function() {
-    const button = $(this);
-    const userId = button.data('id');
-    const name = button.data('name') || '';
-    const email = button.data('email') || '';
-    const designationId = button.data('designation-id') || '';
-    const departmentId = button.data('department-id') || '';
-    const countryCode = (button.data('country-code') || '').toString();
-    const phoneNumber = (button.data('phone-number') || '').toString();
-
-    resetFormState();
-    $('#userId').val(userId);
-    $('#nameInput').val(name);
-    $('#emailInput').val(email);
-    applySelectValue('#designationSelect', designationId);
-    applySelectValue('#departmentSelect', departmentId);
-    $('#country_code').val(countryCode);
-    if (itiInstance) {
-        try {
-            if (countryCode) {
-                const dialPrefixedNumber = countryCode && phoneNumber ? `+${countryCode}${phoneNumber}` : '';
-                if (dialPrefixedNumber) {
-                    itiInstance.setNumber(dialPrefixedNumber);
-                } else {
-                    itiInstance.setNumber('');
-                }
-                if (window.intlTelInputGlobals) {
-                    const countryData = window.intlTelInputGlobals.getCountryData().find(function(item) {
-                        return item.dialCode === countryCode;
-                    });
-                    if (countryData) {
-                        itiInstance.setCountry(countryData.iso2);
-                    }
-                }
-            } else if (phoneNumber) {
-                itiInstance.setNumber(phoneNumber);
-            } else {
-                itiInstance.setNumber('');
-            }
-        } catch (err) {
-            console.warn('Failed to populate phone input', err);
-            $('#phone').val(phoneNumber);
-        }
-    } else {
-        $('#phone').val(phoneNumber);
-    }
-    $('#passwordInput').val('').attr('placeholder', 'Leave blank to keep current password');
-    $('#submitBtn').text('Update');
-    $('#addUserCanvasLabel').text('Update User');
-
-    const canvasEl = document.getElementById('addUserCanvas');
-    const offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
-    offcanvasInstance.show();
-});
+// Edit button is handled by editRecord() function in main.php
+// Removed conflicting handler to avoid conflicts
 
 $('table').on('click', '.deleteBtn', function() {
     const id = $(this).data('id');
@@ -464,7 +445,11 @@ $('table').on('click', '.deleteBtn', function() {
 $('#addUserCanvas').on('hidden.bs.offcanvas', function() {
     resetFormState();
 });
+
+
 });
+
+
 </script>
 <?= $this->endSection() ?>
 

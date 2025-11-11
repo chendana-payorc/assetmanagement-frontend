@@ -118,11 +118,11 @@ $('#departmentForm').on('submit', function(e) {
                 });
             }
         },
-        error: function(xhr) {
+        error: function(xhr){
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: xhr.responseJSON?.error || 'Something went wrong!'
+                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
             });
         }
     });

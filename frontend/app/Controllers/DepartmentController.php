@@ -42,7 +42,7 @@ class DepartmentController extends Controller
         $result = json_decode($response->getBody(), true);
         $departments = $result['data'] ?? []; // ✅ get only the data list
     
-        return view('frontend/department-index', compact('departments'));
+        return view('frontend/department/department-index', compact('departments'));
     }
     
 
@@ -65,8 +65,9 @@ class DepartmentController extends Controller
                     'name' => $name,
                 ]
             ]);
+            $result = json_decode($response->getBody(), true);
 
-            return $this->response->setJSON([
+            return $this->response->setJSON($result ?: [
                 'success' => true,
                 'message' => 'Department created successfully'
             ]);
@@ -92,7 +93,7 @@ class DepartmentController extends Controller
         }
 
         try {
-            $client->put($this->apiBaseUrl . '/update/' . $id, [
+           $response= $client->put($this->apiBaseUrl . '/update/' . $id, [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
@@ -100,7 +101,9 @@ class DepartmentController extends Controller
                 ]
             ]);
 
-            return $this->response->setJSON([
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result ?: [
                 'success' => true,
                 'message' => 'Department updated successfully'
             ]);
@@ -115,6 +118,7 @@ class DepartmentController extends Controller
     // DELETE Department
     public function delete($id)
     {
+        //dd($id);
         $client = \Config\Services::curlrequest();
         $token = session()->get('admin_token');
         $headers = $this->headers;

@@ -23,6 +23,8 @@ class UserController extends Controller
 
     public function index()
     {
+        
+        
         $client = \Config\Services::curlrequest();
         $token = session()->get('admin_token');
     
@@ -35,47 +37,13 @@ class UserController extends Controller
         if ($token) {
             $headers['Authorization'] = 'Bearer ' . $token;
         }
-    
-        $response = $client->get($this->apiBaseUrl . '/list', [
+      
+        $response = $client->get($this->apiBaseUrl . '/getAllAdmins', [
             'headers' => $headers,
         ]);
     
-        $result = json_decode($response->getBody(), true);
-        $users = $result['data'] ?? [];
-
-        $departments = $this->fetchDepartmentsList();
-        $designations = $this->fetchDesignationsList();
-
-        $departmentMap = [];
-        foreach ($departments as $department) {
-            if (isset($department['id'])) {
-                $departmentMap[$department['id']] = $department['name'] ?? '';
-            }
-        }
-
-        $designationMap = [];
-        foreach ($designations as $designation) {
-            if (isset($designation['id'])) {
-                $designationMap[$designation['id']] = $designation['name'] ?? '';
-            }
-        }
-
-        $users = array_map(function ($user) use ($departmentMap, $designationMap) {
-            $departmentId = $user['department_id'] ?? null;
-            $designationId = $user['designation_id'] ?? null;
-
-            if ($departmentId && isset($departmentMap[$departmentId])) {
-                $user['department_name'] = $departmentMap[$departmentId];
-            }
-
-            if ($designationId && isset($designationMap[$designationId])) {
-                $user['designation_name'] = $designationMap[$designationId];
-            }
-
-            return $user;
-        }, $users);
-
-        return view('frontend/users-index', compact('users'));
+        $result = json_decode($response->getBody(), true);        $users = $result['data'] ?? [];
+        return view('frontend/user/users-index', compact('users'));
     }
    
 
@@ -305,5 +273,104 @@ class UserController extends Controller
             return [];
         }
     }
+    public function editRecord()
+    {
+        // Step 1️⃣: Get the ID from POST
+        $encryptedId = $this->request->getPost('id');
+        if (!$encryptedId) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'error' => 'User ID is required'
+            ]);
+        }
+    
+        // Step 2️⃣: Setup cURL client and headers
+        $client = \Config\Services::curlrequest();
+        $token = session()->get('admin_token');
+        $headers = $this->headers;
+    
+        if ($token) {
+            $headers['Authorization'] = 'Bearer ' . $token;
+        }
+    
+        // Step 3️⃣: Decrypt the ID first 🔓
+        try {
+            $decryptResp = $client->post('http://localhost:3000/api/decrypt', [
+                'headers' => $headers,
+                'json' => ['id' => $encryptedId],
+                'timeout' => 5
+            ]);
+    
+            $decResult = json_decode($decryptResp->getBody(), true);
+            $decryptedId = $decResult['data']['id'] ?? null;
+    
+            if (!$decryptedId) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'success' => false,
+                    'error' => 'Failed to decrypt ID before fetching user'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'error' => 'Decrypt API failed: ' . $e->getMessage()
+            ]);
+        }
+    
+        // Step 4️⃣: Now fetch user with decrypted ID
+        try {
+            $apiUrl = $this->apiBaseUrl . '/' . $decryptedId;
+            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $result = json_decode($response->getBody(), true);
+            $user = $result['data'] ?? null;
+    
+            if (!$user) {
+                return $this->response->setStatusCode(404)->setJSON([
+                    'success' => false,
+                    'error' => 'User not found'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'error' => 'Failed to fetch user data: ' . $e->getMessage()
+            ]);
+        }
+    
+        // Step 5️⃣: Decrypt department/designation IDs (optional)
+        try {
+            $decryptResponse = $client->post('http://localhost:3000/api/decrypt', [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'designation_id' => $user['designation_id'] ?? '',
+                    'department_id'  => $user['department_id'] ?? '',
+                ],
+                'timeout' => 5
+            ]);
+    
+            $decResult = json_decode($decryptResponse->getBody(), true);
+    
+            if (!empty($decResult['success']) && !empty($decResult['data'])) {
+                $user['designation_id'] = $decResult['data']['designation_id'] ?? $user['designation_id'];
+                $user['department_id']  = $decResult['data']['department_id'] ?? $user['department_id'];
+            }
+        } catch (\Exception $e) {
+            $user['designation_id'] = $user['designation_id'] ?? '';
+            $user['department_id']  = $user['department_id'] ?? '';
+        }
+    
+        // Step 6️⃣: Fetch dropdown lists
+        $departments  = $this->fetchDepartmentsList();
+        $designations = $this->fetchDesignationsList();
+    
+        // Step 7️⃣: Load the edit form view
+        return view('frontend/user/edit-form', [
+            'user' => $user,
+            'departments' => $departments,
+            'designations' => $designations
+        ]);
+    }
+    
+    
 
 }
