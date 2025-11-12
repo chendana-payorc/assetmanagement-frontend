@@ -42,14 +42,11 @@
                                 <td><?= esc($dept['count']) ?></td>
                                 <td><?= esc($dept['description']) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn" 
-                                            data-id="<?= $dept['id'] ?>" 
-                                            data-name="<?= esc($dept['name']) ?>" 
-                                            data-model="<?= esc($dept['model']) ?>"
-                                            data-count="<?= esc($dept['count']) ?>"
-                                            data-description="<?= esc($dept['description']) ?>">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
+                                <button class="btn btn-sm btn-primary editBtn"
+    onclick="editRecord('<?= base_url('asset-edit') ?>', '<?= esc($dept['id']) ?>')">
+    <i class="fa fa-edit"></i>
+</button>
+
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $dept['id'] ?>">
                                         <i class="fa fa-trash"></i>
                                     </button>
@@ -97,15 +94,36 @@
   </div>
 </div>
 
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="editDepartmentCanvas" aria-labelledby="editDepartmentCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 id="editDepartmentCanvasLabel">Edit Asset</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form id="departmentForm">
+       <div id="editFormData"></div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+        </div>
+    </form>
+  </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
 
-$('#departmentForm').on('submit', function(e) {
+$(document).on('submit', '#departmentForm', function(e) {
     e.preventDefault();
-    let id = $('#dept_id').val();
-    let url = id ? '<?= base_url('asset-update') ?>/' + id : '<?= base_url('asset-store') ?>';
-    
+    const $form = $(this);
+    const id = $form.find('#dept_id').val();
+   
+
+    let url = id 
+        ? '<?= base_url('asset-update') ?>/' + id 
+        : '<?= base_url('asset-store') ?>';
+
     $.ajax({
         url: url,
         method: 'POST',
@@ -115,13 +133,18 @@ $('#departmentForm').on('submit', function(e) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Success!',
-                    text: response.message || 'Saved successfully!',
+                    text: response.message || (id ? 'Updated successfully!' : 'Added successfully!'),
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    // Close offcanvas and reload page
-                    let offcanvas = bootstrap.Offcanvas.getInstance($('#addDepartmentCanvas'));
-                    if (offcanvas) offcanvas.hide();
+                    // ✅ Detect and close whichever offcanvas is open
+                    const editCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('editDepartmentCanvas'));
+                    const addCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('addDepartmentCanvas'));
+
+                    if (editCanvas) editCanvas.hide();
+                    if (addCanvas) addCanvas.hide();
+
+                    // Reload table or page
                     location.reload();
                 });
             } else {
@@ -142,24 +165,6 @@ $('#departmentForm').on('submit', function(e) {
     });
 });
 
-$('.editBtn').on('click', function() {
-    let id = $(this).data('id');
-    let name = $(this).data('name');
-    let model = $(this).data('model');
-    let count = $(this).data('count');
-    let des = $(this).data('description');
-    
-    $('#dept_id').val(id);
-    $('#dept_model').val(model);
-    $('#dept_name').val(name);
-    $('#dept_count').val(count); 
-    $('#dept_des').val(des); 
-    $('#addDepartmentCanvasLabel').text('Edit Asset');
-    $('#submitBtn').text('Update');
-
-    let offcanvas = new bootstrap.Offcanvas($('#addDepartmentCanvas'));
-    offcanvas.show();
-});
 
 $('.deleteBtn').on('click', function() {
     let id = $(this).data('id');
@@ -211,7 +216,10 @@ $('[data-bs-target="#addDepartmentCanvas"]').on('click', function() {
 });
 
 
+
 });
+
+
 </script>
 
 <?= $this->endSection() ?>

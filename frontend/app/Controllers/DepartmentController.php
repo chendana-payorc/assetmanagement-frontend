@@ -143,4 +143,52 @@ class DepartmentController extends Controller
             ]);
         }
     }
+
+    public function editRecord()
+    {
+       $encryptedId = $this->request->getPost('id');
+       
+        if (!$encryptedId) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'error' => 'Department ID is required'
+            ]);
+        }
+    
+        $client = \Config\Services::curlrequest();
+        $token = session()->get('admin_token');
+        $headers = $this->headers;
+    
+        if ($token) {
+            $headers['Authorization'] = 'Bearer ' . $token;
+        }
+    
+        try {
+           $apiUrl = $this->apiBaseUrl . '/get/' . $encryptedId;
+           //log_message('debug', '🟦 API URL: ' . $apiUrl);
+           
+            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $result = json_decode($response->getBody(), true);
+            $asset = $result['data'] ?? null;
+    
+            if (!$asset) {
+                return $this->response->setStatusCode(404)->setJSON([
+                    'success' => false,
+                    'error' => 'Department not found'
+                ]);
+            }
+    
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'error' => 'Failed to fetch department data: ' . $e->getMessage()
+            ]);
+        }
+    
+    
+        return view('frontend/department/edit-form', [
+            'asset' => $asset,
+            
+        ]);
+    }
 }

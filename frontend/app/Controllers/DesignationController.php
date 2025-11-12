@@ -82,6 +82,7 @@ class DesignationController extends Controller
    
     public function update($id)
     {
+        //log_message('debug', '🟦 ID: ' . $id);
         $name = $this->request->getPost('name');
         $status = $this->request->getPost('status');
 
@@ -143,5 +144,53 @@ class DesignationController extends Controller
                  'error' => $e->getMessage()
              ]);
          }
+     }
+
+     public function editRecord()
+     {
+        $encryptedId = $this->request->getPost('id');
+        
+         if (!$encryptedId) {
+             return $this->response->setStatusCode(400)->setJSON([
+                 'success' => false,
+                 'error' => 'Designation ID is required'
+             ]);
+         }
+     
+         $client = \Config\Services::curlrequest();
+         $token = session()->get('admin_token');
+         $headers = $this->headers;
+     
+         if ($token) {
+             $headers['Authorization'] = 'Bearer ' . $token;
+         }
+     
+         try {
+            $apiUrl = $this->apiBaseUrl . '/get/' . $encryptedId;
+            //log_message('debug', '🟦 API URL: ' . $apiUrl);
+            
+             $response = $client->get($apiUrl, ['headers' => $headers]);
+             $result = json_decode($response->getBody(), true);
+             $asset = $result['data'] ?? null;
+     
+             if (!$asset) {
+                 return $this->response->setStatusCode(404)->setJSON([
+                     'success' => false,
+                     'error' => 'Designation not found'
+                 ]);
+             }
+     
+         } catch (\Exception $e) {
+             return $this->response->setStatusCode(500)->setJSON([
+                 'success' => false,
+                 'error' => 'Failed to fetch designation data: ' . $e->getMessage()
+             ]);
+         }
+     
+     
+         return view('frontend/designation/edit-form', [
+             'asset' => $asset,
+             
+         ]);
      }
 }
