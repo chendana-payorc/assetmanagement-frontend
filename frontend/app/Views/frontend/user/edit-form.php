@@ -3,6 +3,7 @@
 <input type="hidden" id="encryptedDesignationId" name="encryptedDesignationId" value="<?= esc($user['encrypted_designation_id'] ?? ($user['designation_id'] ?? '')) ?>">
 <input type="hidden" id="encryptedDepartmentId" name="encryptedDepartmentId" value="<?= esc($user['encrypted_department_id'] ?? ($user['department_id'] ?? '')) ?>">
 
+<!-- <?php print_r($user)?> -->
 
 <div class="form-group">
     <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
@@ -20,35 +21,35 @@
     <!-- Designation -->
     <div class="col-sm-6 form-group">
         <label>Designation<span style="color:red;font-weight:700;">*</span></label>
-        <select class="form-select" name="designation_id" id="designationSelect" required>
-            <option value="">Select Designation</option>
-            <?php if (!empty($designations)): ?>
-                <?php foreach ($designations as $designation): ?>
-                    <option 
-                        value="<?= esc($designation['id']) ?>"
-                        <?= (!empty($user['designation_id']) && (string)$user['designation_id'] === (string)$designation['id']) ? 'selected' : '' ?>>
-                        <?= esc($designation['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </select>
+      
+<!-- Designation -->
+<select name="designation_id" id="designationSelect" class="form-select" required>
+    <option value="">Select Designation</option>
+    <?php foreach ($designations as $designation): ?>
+        <option value="<?= esc($designation['id']) ?>" 
+            <?= (!empty($user['encrypted_designation_id']) && $user['encrypted_designation_id'] === $designation['id']) ? 'selected' : '' ?>>
+            <?= esc($designation['name']) ?>
+        </option>
+    <?php endforeach; ?>
+</select>
+
+
+
     </div>
 
     <!-- Department -->
     <div class="col-sm-6 form-group">
         <label>Department<span style="color:red;font-weight:700;">*</span></label>
-        <select class="form-select" name="department_id" id="departmentSelect" required>
-            <option value="">Select Department</option>
-            <?php if (!empty($departments)): ?>
-                <?php foreach ($departments as $department): ?>
-                    <option 
-                        value="<?= esc($department['id']) ?>"
-                        <?= (!empty($user['department_id']) && (string)$user['department_id'] === (string)$department['id']) ? 'selected' : '' ?>>
-                        <?= esc($department['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </select>
+       <!-- Department -->
+<select name="department_id" id="departmentSelect" class="form-select" required>
+    <option value="">Select Department</option>
+    <?php foreach ($departments as $department): ?>
+        <option value="<?= esc($department['id']) ?>" 
+            <?= (!empty($user['encrypted_department_id']) && $user['encrypted_department_id'] === $department['id']) ? 'selected' : '' ?>>
+            <?= esc($department['name']) ?>
+        </option>
+    <?php endforeach; ?>
+</select>
     </div>
 </div>
 

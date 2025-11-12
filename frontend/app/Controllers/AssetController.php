@@ -21,6 +21,7 @@ class AssetController extends BaseController
 
     public function index()
     {
+
         $client = \Config\Services::curlrequest();
         $token = session()->get('admin_token');
     
@@ -40,8 +41,9 @@ class AssetController extends BaseController
     
         $result = json_decode($response->getBody(), true);
         $assets = $result['data'] ?? [];
+        //dd($assets);
     
-        return view('frontend/asset-index', compact('assets'));
+        return view('frontend/asset/asset-index', compact('assets'));
     }
     public function store()
     {
@@ -145,6 +147,51 @@ class AssetController extends BaseController
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function editRecord()
+    {
+        $encryptedId = $this->request->getPost('id');
+        if (!$encryptedId) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'error' => 'Asset ID is required'
+            ]);
+        }
+    
+        $client = \Config\Services::curlrequest();
+        $token = session()->get('admin_token');
+        $headers = $this->headers;
+    
+        if ($token) {
+            $headers['Authorization'] = 'Bearer ' . $token;
+        }
+    
+        try {
+            $apiUrl = $this->apiBaseUrl . '/get/' . $encryptedId;
+            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $result = json_decode($response->getBody(), true);
+            $asset = $result['data'] ?? null;
+    
+            if (!$asset) {
+                return $this->response->setStatusCode(404)->setJSON([
+                    'success' => false,
+                    'error' => 'Asset not found'
+                ]);
+            }
+    
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'error' => 'Failed to fetch asset data: ' . $e->getMessage()
+            ]);
+        }
+    
+    
+        return view('frontend/asset/edit-form', [
+            'asset' => $asset,
+            
+        ]);
     }
 }
 

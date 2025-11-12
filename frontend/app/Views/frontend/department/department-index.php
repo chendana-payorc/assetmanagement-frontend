@@ -35,12 +35,10 @@
                                 <td><?= esc($dept['name']) ?></td>
                                 <td><?= $dept['status'] == 1 ? 'Active' : 'Inactive' ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn" 
-                                            data-id="<?= $dept['id'] ?>" 
-                                            data-name="<?= esc($dept['name']) ?>" 
-                                            data-status="<?= $dept['status'] ?>">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
+                                <button class="btn btn-sm btn-primary editBtn"
+    onclick="editRecord('<?= base_url('department-edit') ?>', '<?= esc($dept['id']) ?>')">
+    <i class="fa fa-edit"></i>
+</button>
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $dept['id'] ?>">
                                         <i class="fa fa-trash"></i>
                                     </button>
@@ -83,13 +81,30 @@
   </div>
 </div>
 
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="editDepartmentCanvas" aria-labelledby="editDepartmentCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 id="editDepartmentCanvasLabel">Edit Department</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form id="departmentForm">
+       
+    <div id="editFormData"></div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+        </div>
+    </form>
+  </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
-
-$('#departmentForm').on('submit', function(e) {
+    $(document).on('submit', '#departmentForm', function(e) {
     e.preventDefault();
-    let id = $('#dept_id').val();
+    const $form = $(this);
+    const id = $form.find('#dept_id').val();
     let url = id ? '<?= base_url('department-update') ?>/' + id : '<?= base_url('department-store') ?>';
     
     $.ajax({
@@ -128,22 +143,6 @@ $('#departmentForm').on('submit', function(e) {
     });
 });
 
-$('.editBtn').on('click', function() {
-    let id = $(this).data('id');
-    let name = $(this).data('name');
-    let status = $(this).data('status');
-
-    $('#dept_id').val(id);
-    $('#dept_name').val(name);
-    $('#dept_status').val(status); 
-    $('#dept_status').closest('.form-group').show();
-
-    $('#addDepartmentCanvasLabel').text('Edit Department');
-    $('#submitBtn').text('Update');
-
-    let offcanvas = new bootstrap.Offcanvas($('#addDepartmentCanvas'));
-    offcanvas.show();
-});
 
 
 // 🔴 Delete Department

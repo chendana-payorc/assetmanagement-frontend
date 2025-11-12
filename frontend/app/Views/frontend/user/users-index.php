@@ -55,7 +55,7 @@
                                 <td>
                                     <button class="btn btn-sm btn-primary editBtn" 
                                         data-id="<?= esc($user['id'] ?? '') ?>" 
-                                        onclick="editRecord('<?= base_url('user-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
+                                        onclick="edit('<?= base_url('user-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
                                         <i class="fa fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= esc($user['id'] ?? '') ?>">
@@ -315,11 +315,11 @@ $(document).on('submit', '#createUserForm', function(e){
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (nameVal.length < 5 || nameVal.length > 50) {
+    if (nameVal.length < 3 || nameVal.length > 50) {
         Swal.fire({
             icon: 'warning',
             title: 'Validation',
-            text: 'Name must be between 5 and 50 characters.'
+            text: 'Name must be between 3 and 50 characters.'
         });
         return;
     }
@@ -394,9 +394,6 @@ $('[data-bs-target="#addUserCanvas"]').on('click', function() {
     resetFormState();
 });
 
-// Edit button is handled by editRecord() function in main.php
-// Removed conflicting handler to avoid conflicts
-
 $('table').on('click', '.deleteBtn', function() {
     const id = $(this).data('id');
     if (!id) return;
@@ -414,22 +411,24 @@ $('table').on('click', '.deleteBtn', function() {
                 url: '<?= base_url('user-delete') ?>/' + id,
                 method: 'DELETE',
                 success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: response.message || 'User deleted successfully',
-                            showConfirmButton: false,
-                            timer: 1200
-                        }).then(() => location.reload());
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: response.message || 'Failed to delete user.'
-                        });
-                    }
-                },
+    
+    if (response && response.success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'User deleted successfully',
+            showConfirmButton: false,
+            timer: 1200
+        }).then(() => location.reload());
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: response?.message || 'Failed to delete user.'
+        });
+    }
+},
+
                 error: function(xhr) {
                     Swal.fire({
                         icon: 'error',
@@ -447,7 +446,128 @@ $('#addUserCanvas').on('hidden.bs.offcanvas', function() {
 });
 
 
+    window.editFormItiInstance = null;
+    
+    
 });
+
+function edit(url, id) {
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: { id: id },
+        success: function(response, textStatus, xhr) {
+            // Check if response is JSON (error) - jQuery may have parsed it
+            if (typeof response === 'object' && response !== null && !(response instanceof jQuery)) {
+                console.log(response);
+                if (response.error || response.message || response.success === false) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.error || response.message || 'Something went wrong!'
+                    });
+                    return;
+                }
+            }
+           
+            if (typeof response === 'string') {
+                const trimmed = response.trim();
+                if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                    try {
+                        const errorData = JSON.parse(response);
+                        if (errorData.error || errorData.message || errorData.success === false) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorData.error || errorData.message || 'Something went wrong!'
+                            });
+                            return;
+                        }
+                    } catch (e) {
+                        
+                    }
+                }
+            }
+          
+            $('#editFormData').html(response);
+            
+            window.editFormItiInstance = null;
+            
+            // Function to initialize phone input
+    function initPhoneInput() {
+                const phoneInput = document.querySelector('#editFormData #phone');
+                if (!phoneInput) return;
+                
+                if (typeof window.intlTelInput === 'undefined') {
+                   
+                    setTimeout(initPhoneInput, 100);
+                    return;
+                }
+                
+                const countryCode = $('#editFormData #country_code').val() || '';
+                const phoneNumber = $('#editFormData #phone').val() || '';
+              
+                try {
+                    const iti = window.intlTelInput(phoneInput, {
+                        separateDialCode: true,
+                        initialCountry: 'in',
+                        preferredCountries: ['in', 'us', 'gb', 'ae'],
+                        autoPlaceholder: 'polite',
+                        utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js'
+                    });
+                    
+                    window.editFormItiInstance = iti;
+                    
+                    if (countryCode && phoneNumber) {
+                        try {
+                           
+                            if (window.intlTelInputGlobals && window.intlTelInputGlobals.getCountryData) {
+                                const countryData = window.intlTelInputGlobals.getCountryData().find(function(item) {
+                                    return item.dialCode === countryCode;
+                                });
+                                if (countryData) {
+                                    iti.setCountry(countryData.iso2);
+                                }
+                            }
+                            // Then set the number
+                            const dialPrefixedNumber = `+${countryCode}${phoneNumber}`;
+                            iti.setNumber(dialPrefixedNumber);
+                        } catch (err) {
+                            console.warn('Failed to set phone number', err);
+                            // Fallback: just set the value
+                            phoneInput.value = phoneNumber;
+                        }
+                    } else if (phoneNumber) {
+                        phoneInput.value = phoneNumber;
+                    }
+                } catch (err) {
+                    console.warn('Failed to initialize phone input', err);
+                }
+            }
+            
+            setTimeout(initPhoneInput, 100);
+           
+            $('#editUserCanvas #submitBtn').text('Update');
+            $('#editUserCanvasLabel').text('Update User');
+           
+            const canvasEl = document.getElementById('editUserCanvas');
+            const offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
+            offcanvasInstance.show();
+            
+            canvasEl.addEventListener('hidden.bs.offcanvas', function() {
+                window.editFormItiInstance = null;
+            }, { once: true });
+        },
+        error: function(xhr) {
+            console.log(xhr.responseJSON);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
+            });
+        }
+    });
+}
 
 
 </script>

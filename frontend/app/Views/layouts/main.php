@@ -74,6 +74,7 @@
         $(function() {
             $('#example-table').DataTable({
                 pageLength: 10,
+                ordering: false,
                 //"ajax": './assets/demo/data/table_data.json',
                 /*"columns": [
                     { "data": "name" },
@@ -86,122 +87,31 @@
         });
 
 
-    // Global variable to store edit form's iti instance
-    window.editFormItiInstance = null;
-    
-    function editRecord(url, id) {
+function editRecord(requestUrl, id) {
+    console.log(requestUrl,id);
     $.ajax({
-        url: url,
+        url: requestUrl,
         method: 'POST',
         data: { id: id },
-        success: function(response, textStatus, xhr) {
-            // Check if response is JSON (error) - jQuery may have parsed it
-            if (typeof response === 'object' && response !== null && !(response instanceof jQuery)) {
-                // Check if it looks like an error response
-                if (response.error || response.message || response.success === false) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: response.error || response.message || 'Something went wrong!'
-                    });
-                    return;
-                }
-            }
-           
-            if (typeof response === 'string') {
-                const trimmed = response.trim();
-                if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-                    try {
-                        const errorData = JSON.parse(response);
-                        if (errorData.error || errorData.message || errorData.success === false) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: errorData.error || errorData.message || 'Something went wrong!'
-                            });
-                            return;
-                        }
-                    } catch (e) {
-                        
-                    }
-                }
-            }
-          
-            $('#editFormData').html(response);
-            
-            window.editFormItiInstance = null;
-            
-            // Function to initialize phone input
-            function initPhoneInput() {
-                const phoneInput = document.querySelector('#editFormData #phone');
-                if (!phoneInput) return;
-                
-                if (typeof window.intlTelInput === 'undefined') {
-                   
-                    setTimeout(initPhoneInput, 100);
-                    return;
-                }
-                
-                const countryCode = $('#editFormData #country_code').val() || '';
-                const phoneNumber = $('#editFormData #phone').val() || '';
-              
-                try {
-                    const iti = window.intlTelInput(phoneInput, {
-                        separateDialCode: true,
-                        initialCountry: 'in',
-                        preferredCountries: ['in', 'us', 'gb', 'ae'],
-                        autoPlaceholder: 'polite',
-                        utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js'
-                    });
-                    
-                    window.editFormItiInstance = iti;
-                    
-                    if (countryCode && phoneNumber) {
-                        try {
-                           
-                            if (window.intlTelInputGlobals && window.intlTelInputGlobals.getCountryData) {
-                                const countryData = window.intlTelInputGlobals.getCountryData().find(function(item) {
-                                    return item.dialCode === countryCode;
-                                });
-                                if (countryData) {
-                                    iti.setCountry(countryData.iso2);
-                                }
-                            }
-                            // Then set the number
-                            const dialPrefixedNumber = `+${countryCode}${phoneNumber}`;
-                            iti.setNumber(dialPrefixedNumber);
-                        } catch (err) {
-                            console.warn('Failed to set phone number', err);
-                            // Fallback: just set the value
-                            phoneInput.value = phoneNumber;
-                        }
-                    } else if (phoneNumber) {
-                        phoneInput.value = phoneNumber;
-                    }
-                } catch (err) {
-                    console.warn('Failed to initialize phone input', err);
-                }
-            }
-            
-            setTimeout(initPhoneInput, 100);
-           
-            $('#editUserCanvas #submitBtn').text('Update');
-            $('#editUserCanvasLabel').text('Update User');
-           
-            const canvasEl = document.getElementById('editUserCanvas');
-            const offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
-            offcanvasInstance.show();
-            
-            canvasEl.addEventListener('hidden.bs.offcanvas', function() {
-                window.editFormItiInstance = null;
-            }, { once: true });
+        beforeSend: function () {
+            $('#editFormData').html('<div class="text-center p-3">Loading...</div>');
         },
-        error: function(xhr) {
-            console.log(xhr.responseJSON);
+        success: function (response) {
+            
+            $('#editFormData').html(response);
+
+            var editCanvas = new bootstrap.Offcanvas(document.getElementById('editDepartmentCanvas'));
+            editCanvas.show();
+        },
+        error: function (xhr) {
+            let message = 'Something went wrong!';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                message = xhr.responseJSON.error;
+            }
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
+                text: message,
             });
         }
     });
