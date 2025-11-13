@@ -1,69 +1,47 @@
 <?php
 
 namespace App\Controllers;
-
 use CodeIgniter\Controller;
 
 class UserController extends Controller
 {
-    private $apiBaseUrl;
-    private $headers;
-
-    public function __construct()
-    {
-        helper(['url', 'session']);
-        $this->apiBaseUrl = env('API_BASE_URL') . '/admin';
-
-        $this->headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    }
-
     public function index()
     {
-        
-        
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-    
-        $headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
+
+        try {
+            $response = $client->get($baseUrl . '/getAllAdmins', [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+            $users = $result['data'] ?? [];
+        } catch (\Exception $e) {
+            $users = [];
         }
-      
-        $response = $client->get($this->apiBaseUrl . '/getAllAdmins', [
-            'headers' => $headers,
-        ]);
-    
-        $result = json_decode($response->getBody(), true);        $users = $result['data'] ?? [];
+
         return view('frontend/user/users-index', compact('users'));
     }
-   
 
     public function getDesignations()
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         try {
             $response = $client->get('http://localhost:3000/api/designation/list', [
                 'headers' => $headers
             ]);
-    
-            return $this->response->setJSON(json_decode($response->getBody(), true));
-    
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => $result['data'] ?? $result
+            ]);
+
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
@@ -71,24 +49,24 @@ class UserController extends Controller
             ]);
         }
     }
-    
+
     public function getDepartments()
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         try {
             $response = $client->get('http://localhost:3000/api/department/list', [
                 'headers' => $headers
             ]);
-    
-            return $this->response->setJSON(json_decode($response->getBody(), true));
-    
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => $result['data'] ?? $result
+            ]);
+
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
@@ -99,46 +77,32 @@ class UserController extends Controller
 
     public function store()
     {
-        $name           = $this->request->getPost('name');
-        $email          = $this->request->getPost('email');
-        $password       = $this->request->getPost('password');
-        $designationId  = $this->request->getPost('designation_id');
-        $departmentId   = $this->request->getPost('department_id');
-        $countryCode    = $this->request->getPost('country_code');
-        $phoneNumber    = $this->request->getPost('phone_number');
-    
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-       
-        $headers = $this->headers;
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
+
+        $data = array_filter([
+            'name' => $this->request->getPost('name'),
+            'email' => $this->request->getPost('email'),
+            'password' => $this->request->getPost('password'),
+            'designation_id' => $this->request->getPost('designation_id') ?: null,
+            'department_id' => $this->request->getPost('department_id') ?: null,
+            'country_code' => $this->request->getPost('country_code') ?: null,
+            'phone_number' => $this->request->getPost('phone_number') ?: null,
+        ], fn($v) => $v !== null && $v !== '');
+
         try {
-            $response = $client->post($this->apiBaseUrl . '/register', [
+            $response = $client->post($baseUrl . '/register', [
                 'headers' => $headers,
-                'form_params' => array_filter([
-                    'name' => $name,
-                    'email' => $email,
-                    'password' => $password,
-                    'designation_id' => $designationId ?: null,
-                    'department_id' => $departmentId ?: null,
-                    'country_code' => $countryCode ?: null,
-                    'phone_number' => $phoneNumber ?: null,
-                ], function ($value) {
-                    return $value !== null && $value !== '';
-                })
+                'form_params' => $data
             ]);
-    
+
             $result = json_decode($response->getBody(), true);
-    
-            // 🔹 Ensure consistent keys for frontend
+
             return $this->response->setJSON([
                 'success' => $result['success'] ?? true,
                 'message' => $result['message'] ?? 'User created successfully'
             ]);
-    
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
@@ -146,115 +110,80 @@ class UserController extends Controller
             ]);
         }
     }
-    
-    
+
     public function update($id)
-{
-    $name           = $this->request->getPost('name');
-    $email          = $this->request->getPost('email');
-    $password       = $this->request->getPost('password');
-    $designationId  = $this->request->getPost('designation_id');
-    $departmentId   = $this->request->getPost('department_id');
-    $countryCode    = $this->request->getPost('country_code');
-    $phoneNumber    = $this->request->getPost('phone_number');
+    {
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
 
-    $client = \Config\Services::curlrequest();
-    $token = session()->get('admin_token');
-
-    $headers = $this->headers;
-    if ($token) {
-        $headers['Authorization'] = 'Bearer ' . $token;
-    }
-
-    try {
-        $formParams = array_filter([
-            'name' => $name,
-            'email' => $email,
-            'designation_id' => $designationId ?: null,
-            'department_id' => $departmentId ?: null,
-            'country_code' => $countryCode ?: null,
-            'phone_number' => $phoneNumber ?: null,
+        $data = array_filter([
+            'name' => $this->request->getPost('name'),
+            'email' => $this->request->getPost('email'),
+            'designation_id' => $this->request->getPost('designation_id') ?: null,
+            'department_id' => $this->request->getPost('department_id') ?: null,
+            'country_code' => $this->request->getPost('country_code') ?: null,
+            'phone_number' => $this->request->getPost('phone_number') ?: null,
+            'password' => $this->request->getPost('password') ?: null,
         ], fn($v) => $v !== null && $v !== '');
 
-        if (!empty($password)) {
-            $formParams['password'] = $password;
+        try {
+            $headers['Content-Type'] = 'application/json';
+
+            $response = $client->put($baseUrl . '/update/' . $id, [
+                'headers' => $headers,
+                'json' => $data
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON([
+                'success' => $result['success'] ?? true,
+                'message' => $result['message'] ?? 'User updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
-
-        $headers['Content-Type'] = 'application/json';
-
-        $response = $client->put($this->apiBaseUrl . '/update/' . $id, [
-            'headers' => $headers,
-            'json' => $formParams
-        ]);
-
-        $result = json_decode($response->getBody(), true);
-
-        // ✅ Ensure consistent structure
-        if (!isset($result['success'])) {
-            $result['success'] = true;
-        }
-        if (!isset($result['message'])) {
-            $result['message'] = 'User updated successfully';
-        }
-
-        return $this->response->setJSON($result);
-
-    } catch (\Exception $e) {
-        return $this->response->setStatusCode(500)->setJSON([
-            'success' => false,
-            'message' => $e->getMessage()
-        ]);
-    }
-}
- 
-public function delete($id)
-{
-    $client = \Config\Services::curlrequest();
-    $token = session()->get('admin_token');
-
-    $headers = $this->headers;
-    if ($token) {
-        $headers['Authorization'] = 'Bearer ' . $token;
     }
 
-    try {
-        $response = $client->delete($this->apiBaseUrl . '/delete/' . $id, [
-            'headers' => $headers
-        ]);
+    public function delete($id)
+    {
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
 
-        $result = json_decode($response->getBody(), true);
+        try {
+            $response = $client->delete($baseUrl . '/delete/' . $id, [
+                'headers' => $headers
+            ]);
 
-        // Ensure consistent structure for frontend
-        if (!isset($result['success'])) {
-            $result['success'] = true;
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON([
+                'success' => $result['success'] ?? true,
+                'message' => $result['message'] ?? 'User deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
-        if (!isset($result['message'])) {
-            $result['message'] = 'User deleted successfully';
-        }
-
-        return $this->response->setJSON($result);
-
-    } catch (\Exception $e) {
-        return $this->response->setStatusCode(500)->setJSON([
-            'success' => false,
-            'message' => $e->getMessage() // use message, not error, for consistency
-        ]);
     }
-}
 
     private function fetchDesignationsList(): array
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-
-        $headers = $this->headers;
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
+        $client = getApiClient();
+        $headers = getApiHeaders();
 
         try {
-            $response = $client->get('http://localhost:3000/api/designation/list', [
-                'headers' => $headers
+            $response = $client->get(getDesignationApiUrl('/list'), [
+                'headers' => $headers,
             ]);
 
             $result = json_decode($response->getBody(), true);
@@ -266,17 +195,12 @@ public function delete($id)
 
     private function fetchDepartmentsList(): array
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-
-        $headers = $this->headers;
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
+        $client = getApiClient();
+        $headers = getApiHeaders();
 
         try {
-            $response = $client->get('http://localhost:3000/api/department/list', [
-                'headers' => $headers
+            $response = $client->get(getDepartmentApiUrl('/list'), [
+                'headers' => $headers,
             ]);
 
             $result = json_decode($response->getBody(), true);
@@ -285,55 +209,46 @@ public function delete($id)
             return [];
         }
     }
-   
+
     public function editRecord()
     {
         $encryptedId = $this->request->getPost('id');
+
         if (!$encryptedId) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
                 'error' => 'User ID is required'
             ]);
         }
-    
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
+
         try {
-            $apiUrl = $this->apiBaseUrl . '/' . $encryptedId;
-            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $response = $client->get($baseUrl . '/' . $encryptedId, [
+                'headers' => $headers
+            ]);
+
             $result = json_decode($response->getBody(), true);
             $user = $result['data'] ?? null;
-    
+
             if (!$user) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
                     'error' => 'User not found'
                 ]);
             }
-    
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
                 'error' => 'Failed to fetch user data: ' . $e->getMessage()
             ]);
         }
-    
-        // Fetch department & designation lists (plain IDs are fine here)
-        $departments  = $this->fetchDepartmentsList();
-        $designations = $this->fetchDesignationsList();
-    
-        return view('frontend/user/edit-form', [
-            'user' => $user,
-            'departments' => $departments,
-            'designations' => $designations
-        ]);
-    }
-    
 
+        $departments = $this->fetchDepartmentsList();
+        $designations = $this->fetchDesignationsList();
+
+        return view('frontend/user/edit-form', compact('user', 'departments', 'designations'));
+    }
 }

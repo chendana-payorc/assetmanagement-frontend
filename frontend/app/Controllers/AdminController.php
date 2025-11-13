@@ -13,122 +13,108 @@ class AdminController extends Controller
 
     public function registerPost()
     {
-    $name = $this->request->getPost('name');
-    $email = $this->request->getPost('email');
-    $password = $this->request->getPost('password');
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
 
-    $client = \Config\Services::curlrequest();
+        $name = $this->request->getPost('name');
+        $email = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
 
-    try {
-        $response = $client->post('http://localhost:3000/api/admin/register', [
-            'form_params' => [
-                'name' => $name,
-                'email' => $email,
-                'password' => $password
-            ],
-            'headers' => [
-                'Accept' => 'application/json',
-                'username' => env('API_USERNAME'),
-                'password' => env('API_PASSWORD'),
-            ]
-        ]);
+        try {
+            $response = $client->post($baseUrl . '/register', [
+                'headers' => $headers,
+                'form_params' => [
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => $password
+                ]
+            ]);
 
-        $data = json_decode($response->getBody(), true);
+            $data = json_decode($response->getBody(), true);
 
-        if (isset($data['success']) && $data['success']) {
-            return redirect()->to('/login')->with('success', 'Registration successful! Please login.');
-        } else {
-            return redirect()->back()->with('error', 'Registration failed');
+            if (!empty($data['success'])) {
+                return redirect()->to('/login')->with('success', 'Registration successful! Please login.');
+            }
+
+            return redirect()->back()->with('error', $data['message'] ?? 'Registration failed.');
+        } catch (\Exception $e) {
+            log_message('error', 'Register API error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Server error: ' . $e->getMessage());
         }
-        
-    } catch (\Exception $e) {
-        log_message('error', 'CURL error: '.$e->getMessage());
-        return redirect()->back()->with('error', 'Server error: '.$e->getMessage());
     }
-}
 
     public function login()
     {
         return view('login');
     }
+
     public function loginPost()
     {
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
+
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
-    
-        $client = \Config\Services::curlrequest();
-        $apiUrl = 'http://localhost:3000/api/admin/login';
-    
+
         try {
             // Step 1: Login API call
-            $response = $client->post($apiUrl, [
+            $response = $client->post($baseUrl . '/login', [
+                'headers' => $headers,
                 'json' => [
                     'email' => $email,
                     'password' => $password
-                ],
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'username' => env('API_USERNAME'),
-                    'password' => env('API_PASSWORD'),
                 ]
             ]);
-    
+
             $result = json_decode($response->getBody(), true);
-    
-            // Extract token from nested "data" if exists
             $token = $result['data']['token'] ?? $result['token'] ?? null;
-    
+
             if ($token) {
                 // Step 2: Store token and email in session
                 session()->set('admin_token', $token);
                 session()->set('admin_email', $email);
-    
-                // Step 3: Optionally fetch all admins to get admin name
+
+                // Step 3: Fetch all admins to get the name
                 try {
-                    $listResponse = $client->get('http://localhost:3000/api/admin/getAllAdmins', [
-                        'headers' => [
-                            'Accept' => 'application/json',
-                            'username' => env('API_USERNAME'),
-                            'password' => env('API_PASSWORD'),
+                    $listResponse = $client->get($baseUrl . '/getAllAdmins', [
+                        'headers' => array_merge($headers, [
                             'Authorization' => 'Bearer ' . $token,
-                        ]
+                        ])
                     ]);
-    
+
                     $listData = json_decode($listResponse->getBody(), true);
                     $admins = $listData['data'] ?? [];
-    
-                    // Find the logged-in admin by email
+
                     foreach ($admins as $admin) {
                         if (!empty($admin['email']) && strtolower($admin['email']) === strtolower($email)) {
                             session()->set('admin_name', $admin['name'] ?? '');
                             break;
                         }
                     }
-    
                 } catch (\Exception $e) {
-                    // Optional: name fetching is not critical
-                    log_message('error', 'Error fetching admin list: ' . $e->getMessage());
+                    log_message('error', 'Admin list fetch failed: ' . $e->getMessage());
                 }
-    
-                // Step 4: Redirect to home
+
+                // Step 4: Redirect to dashboard
                 return redirect()->to('/')->with('success', 'Login successful');
             }
-    
-            // If token not found
+
             return redirect()->back()->with('error', $result['message'] ?? 'Invalid credentials');
-    
         } catch (\Exception $e) {
+            log_message('error', 'Login API error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Server error: ' . $e->getMessage());
         }
     }
-    
 
     public function dashboard()
     {
         $token = session()->get('admin_token');
         if (!$token) {
-            return redirect()->to('/login')->with('error', 'Please Login First');
-        } 
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+
         return view('frontend/dashboard');
     }
 

@@ -4,194 +4,153 @@ namespace App\Controllers;
 
 class AssetController extends BaseController
 {
-    private $apiBaseUrl;
-    private $headers;
-
-    public function __construct()
-    {
-        helper(['url', 'session']);
-        $this->apiBaseUrl = env('API_BASE_URL') . '/asset';
-
-        $this->headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    }
-
     public function index()
     {
+        helper('api');
 
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-    
-        $headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
-        $response = $client->get('http://localhost:3000/api/asset/list', [
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        
+
+        $response = $client->get(getAssetApiUrl('/list'), [
             'headers' => $headers,
         ]);
-    
+
         $result = json_decode($response->getBody(), true);
         $assets = $result['data'] ?? [];
-        //dd($assets);
-    
+
         return view('frontend/asset/asset-index', compact('assets'));
     }
+
     public function store()
     {
+        helper('api');
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         $name = $this->request->getPost('name');
         $model = $this->request->getPost('model');
         $count = $this->request->getPost('count');
         $description = $this->request->getPost('description');
-        
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-       
-        $headers = $this->headers;
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
 
         try {
-            $response = $client->post($this->apiBaseUrl . '/create', [
+            $client->post(getAssetApiUrl('/create'), [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
-                    'count'=>$count,
-                    'model'=>$model,
-                    'description'=>$description
-                ]
+                    'model' => $model,
+                    'count' => $count,
+                    'description' => $description,
+                ],
             ]);
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Asset created successfully'
+                'message' => 'Asset created successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
-   
+
     public function update($id)
     {
+        helper('api');
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         $name = $this->request->getPost('name');
         $model = $this->request->getPost('model');
         $count = $this->request->getPost('count');
         $description = $this->request->getPost('description');
 
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-
         try {
-            $client->put($this->apiBaseUrl . '/update/' . $id, [
+            $client->put(getAssetApiUrl('/update/' . $id), [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
-                    'count'=>$count,
-                    'model'=>$model,
-                    'description'=>$description
-                ]
+                    'model' => $model,
+                    'count' => $count,
+                    'description' => $description,
+                ],
             ]);
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Asset updated successfully'
+                'message' => 'Asset updated successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
-    // DELETE Department
     public function delete($id)
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
+        helper('api');
 
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
+        $client = getApiClient();
+        $headers = getApiHeaders();
 
         try {
-            $client->delete($this->apiBaseUrl . '/delete/' . $id, [
-                'headers' => $headers
+            $client->delete(getAssetApiUrl('/delete/' . $id), [
+                'headers' => $headers,
             ]);
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Asset deleted successfully'
+                'message' => 'Asset deleted successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     public function editRecord()
     {
+        helper('api');
+
         $encryptedId = $this->request->getPost('id');
         if (!$encryptedId) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
-                'error' => 'Asset ID is required'
+                'error' => 'Asset ID is required',
             ]);
         }
-    
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         try {
-            $apiUrl = $this->apiBaseUrl . '/get/' . $encryptedId;
-            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $response = $client->get(getAssetApiUrl('/get/' . $encryptedId), [
+                'headers' => $headers,
+            ]);
             $result = json_decode($response->getBody(), true);
             $asset = $result['data'] ?? null;
-    
+
             if (!$asset) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
-                    'error' => 'Asset not found'
+                    'error' => 'Asset not found',
                 ]);
             }
-    
+
+            return view('frontend/asset/edit-form', compact('asset'));
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => 'Failed to fetch asset data: ' . $e->getMessage()
+                'error' => 'Failed to fetch asset data: ' . $e->getMessage(),
             ]);
         }
-    
-    
-        return view('frontend/asset/edit-form', [
-            'asset' => $asset,
-            
-        ]);
     }
 }
-
