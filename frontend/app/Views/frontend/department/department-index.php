@@ -63,7 +63,7 @@
     <form id="departmentForm">
         <input type="hidden" name="id" id="dept_id">
         <div class="form-group mb-3">
-            <label class="required">Name</label>
+            <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
             <input class="form-control" type="text" name="name" id="dept_name" placeholder="Enter Name" required>
         </div>
         <div class="form-group mb-3">
@@ -112,19 +112,20 @@ $(document).ready(function() {
         method: 'POST',
         data: $(this).serialize(),
         success: function(response) {
-            if (response.success) {
+            if (response.status === 'success' || response.success === true) {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: response.message || 'Saved successfully!',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    // Close offcanvas and reload page
-                    let offcanvas = bootstrap.Offcanvas.getInstance($('#addDepartmentCanvas'));
-                    if (offcanvas) offcanvas.hide();
-                    location.reload();
-                });
+                icon: 'success',
+                title: 'Success!',
+                text: response.message || 'Department created successfully!',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                // Close offcanvas and reload page
+                let offcanvas = bootstrap.Offcanvas.getInstance($('#addDepartmentCanvas'));
+                if (offcanvas) offcanvas.hide();
+                location.reload();
+            });
+               
             } else {
                 Swal.fire({
                     icon: 'error',

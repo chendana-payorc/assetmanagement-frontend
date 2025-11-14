@@ -3,192 +3,151 @@
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
+
 class DepartmentController extends Controller
 {
-    private $apiBaseUrl;
-    private $headers;
-
-    public function __construct()
-    {
-        helper(['url', 'session']);
-        $this->apiBaseUrl = env('API_BASE_URL') . '/department';
-
-        $this->headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    }
-
     public function index()
     {
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-    
-        $headers = [
-            'Accept' => 'application/json',
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD'),
-        ];
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
-        $response = $client->get('http://localhost:3000/api/department/list', [
+        helper('api');
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
+        $response = $client->get(getDepartmentApiUrl('/list'), [
             'headers' => $headers,
         ]);
-    
+
         $result = json_decode($response->getBody(), true);
-        $departments = $result['data'] ?? []; // ✅ get only the data list
-    
+        $departments = $result['data'] ?? [];
+
         return view('frontend/department/department-index', compact('departments'));
     }
-    
 
     public function store()
     {
+        helper('api');
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         $name = $this->request->getPost('name');
-        
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-       
-        $headers = $this->headers;
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
 
         try {
-            $response = $client->post($this->apiBaseUrl . '/create', [
+            $response = $client->post(getDepartmentApiUrl('/create'), [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
-                ]
+                ],
             ]);
+
             $result = json_decode($response->getBody(), true);
 
             return $this->response->setJSON($result ?: [
                 'success' => true,
-                'message' => 'Department created successfully'
+                'message' => 'Department created successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
-   
+
     public function update($id)
     {
+        helper('api');
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         $name = $this->request->getPost('name');
         $status = $this->request->getPost('status');
 
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-
         try {
-           $response= $client->put($this->apiBaseUrl . '/update/' . $id, [
+            $response = $client->put(getDepartmentApiUrl('/update/' . $id), [
                 'headers' => $headers,
                 'form_params' => [
                     'name' => $name,
-                    'status' => $status
-                ]
+                    'status' => $status,
+                ],
             ]);
 
             $result = json_decode($response->getBody(), true);
 
             return $this->response->setJSON($result ?: [
                 'success' => true,
-                'message' => 'Department updated successfully'
+                'message' => 'Department updated successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
-    // DELETE Department
     public function delete($id)
     {
-        //dd($id);
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
+        helper('api');
 
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
+        $client = getApiClient();
+        $headers = getApiHeaders();
 
         try {
-            $client->delete($this->apiBaseUrl . '/delete/' . $id, [
-                'headers' => $headers
+            $client->delete(getDepartmentApiUrl('/delete/' . $id), [
+                'headers' => $headers,
             ]);
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Department deleted successfully'
+                'message' => 'Department deleted successfully',
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     public function editRecord()
     {
-       $encryptedId = $this->request->getPost('id');
-       
+        helper('api');
+
+        $encryptedId = $this->request->getPost('id');
+
         if (!$encryptedId) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
-                'error' => 'Department ID is required'
+                'error' => 'Department ID is required',
             ]);
         }
-    
-        $client = \Config\Services::curlrequest();
-        $token = session()->get('admin_token');
-        $headers = $this->headers;
-    
-        if ($token) {
-            $headers['Authorization'] = 'Bearer ' . $token;
-        }
-    
+
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
         try {
-           $apiUrl = $this->apiBaseUrl . '/get/' . $encryptedId;
-           //log_message('debug', '🟦 API URL: ' . $apiUrl);
-           
-            $response = $client->get($apiUrl, ['headers' => $headers]);
+            $response = $client->get(getDepartmentApiUrl('/get/' . $encryptedId), [
+                'headers' => $headers,
+            ]);
+
             $result = json_decode($response->getBody(), true);
             $asset = $result['data'] ?? null;
-    
+
             if (!$asset) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
-                    'error' => 'Department not found'
+                    'error' => 'Department not found',
                 ]);
             }
-    
+
+            return view('frontend/department/edit-form', compact('asset'));
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => 'Failed to fetch department data: ' . $e->getMessage()
+                'error' => 'Failed to fetch department data: ' . $e->getMessage(),
             ]);
         }
-    
-    
-        return view('frontend/department/edit-form', [
-            'asset' => $asset,
-            
-        ]);
     }
 }
