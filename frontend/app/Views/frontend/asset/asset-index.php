@@ -112,6 +112,22 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+
+$(function() {
+            $('#example-table').DataTable({
+                pageLength: 10,
+                ordering: false,
+                //"ajax": './assets/demo/data/table_data.json',
+                /*"columns": [
+                    { "data": "name" },
+                    { "data": "office" },
+                    { "data": "extn" },
+                    { "data": "start_date" },
+                    { "data": "salary" }
+                ]*/
+            });
+        });
+
 $(document).ready(function() {
 
 $(document).on('submit', '#departmentForm', function(e) {
