@@ -29,6 +29,37 @@ class UserController extends Controller
         return view('frontend/user/users-index', compact('users'));
     }
 
+
+    public function filterUsers()
+{
+    $client = getApiClient();
+    $baseUrl = getApiBaseUrl();
+    $headers = getApiHeaders();
+
+    $query = http_build_query([
+        'name' => $this->request->getGet('name'),
+        'email' => $this->request->getGet('email'),
+        'department_id' => $this->request->getGet('department_id'),
+        'designation_id' => $this->request->getGet('designation_id')
+    ]);
+
+    try {
+        $response = $client->get($baseUrl . "/getAllAdmins?$query", [
+            'headers' => $headers,
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+        return $this->response->setJSON($result);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'data' => []
+        ]);
+    }
+}
+
+
     public function getDesignations()
     {
         $client = getApiClient();

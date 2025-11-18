@@ -19,6 +19,7 @@ $routes->post('/user-update/(:any)', 'UserController::update/$1');
 $routes->delete('/user-delete/(:any)', 'UserController::delete/$1');
 $routes->get('/designations', 'UserController::getDesignations');
 $routes->get('/departments', 'UserController::getDepartments');
+$routes->get('/filter-users', 'UserController::filterUsers');
 
 $routes->get('/asset-list', 'AssetController::index');
 $routes->post('/asset-store', 'AssetController::store');
@@ -27,6 +28,7 @@ $routes->post('/asset-update/(:any)', 'AssetController::update/$1');
 $routes->delete('/asset-delete/(:any)', 'AssetController::delete/$1');
 
 $routes->get('department-list', 'DepartmentController::index');
+$routes->get('department', 'DepartmentController::fetch'); // AJAX
 $routes->post('/department-store', 'DepartmentController::store');
 $routes->post('/department-edit', 'DepartmentController::editRecord');
 $routes->post('department-update/(:any)', 'DepartmentController::update/$1');
