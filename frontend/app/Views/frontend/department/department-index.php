@@ -5,11 +5,13 @@
 
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Department List</h1>
-    <button class="btn btn-primary my-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#addDepartmentCanvas" aria-controls="addDepartmentCanvas">
-        Add Department +
+    <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addDepartmentCanvas" aria-controls="addDepartmentCanvas"
+    title="Add">
+    <i class="fa fa-plus mx-2"></i> Add Department
     </button>
 </div>
-<div class="row m-3 p-3 ibox">
+
+<div class="row mb-4 shadow-sm p-3 bg-light rounded m-3">
     <h5 class="pb-2 mb-2">Filters</h5>
     <div class="col-md-4">
        
@@ -26,12 +28,14 @@
     </div>
 
     <div class="col-md-2">
-        <button class="btn btn-info btn-block" id="applyFilter">
-            <i class="fa fa-filter"></i> Filter
+        <button class="btn btn-primary btn-block text-light font-bold" id="applyFilter"
+        title="Search">
+            <i class="fa fa-search mx-2"></i>Search
         </button>
     </div>
     <div class="col-md-2">
-        <button id="resetFilter" class="btn btn-secondary btn-block">Reset</button>
+        <button id="resetFilter" class="btn btn-secondary btn-block font-bold"
+        title="Reset">Reset</button>
     </div>
 </div>
 
@@ -61,13 +65,20 @@
                                 <td><?= esc($dept['name']) ?></td>
                                 <td><?= $dept['status'] == 1 ? 'Active' : 'Inactive' ?></td>
                                 <td>
-                                <button class="btn btn-sm btn-primary editBtn"
-    onclick="editRecord('<?= base_url('department-edit') ?>', '<?= esc($dept['id']) ?>')">
-    <i class="fa fa-edit"></i>
-</button>
-                                    <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $dept['id'] ?>">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                <button class="btn btn-sm btn-primary editBtn tooltip-btn"
+                                  
+                                    title="Edit"
+                                    onclick="editRecord('<?= base_url('department-edit') ?>', '<?= esc($dept['id']) ?>')">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-danger deleteBtn tooltip-btn"
+                                   
+                                    title="Delete"
+                                    data-id="<?= $dept['id'] ?>">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -274,3 +285,5 @@ $('#filterName').on('keypress', function (e) {
 </script>
 
 <?= $this->endSection() ?>
+
+

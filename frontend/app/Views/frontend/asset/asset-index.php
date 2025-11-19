@@ -13,29 +13,30 @@
  
 <div class="page-content fade-in-up">
 
-Filter
+
 
 <!-- ================= FILTER SECTION ================= -->
 <div class="card mb-4 shadow-sm p-3 bg-light rounded">
+<h5 class="pb-2 mb-2">Filters</h5>
         <form method="GET" action="<?= base_url('asset-list') ?>">
             <div class="row g-3 align-items-end">
 
                 <div class="col-md-3">
-                    <label class="form-label">Model</label>
+                   
                     <input type="text" name="model" class="form-control" 
                            value="<?= esc($model ?? '') ?>" 
                            placeholder="Search Model">
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Name</label>
+                   
                     <input type="text" name="name" class="form-control" 
                            value="<?= esc($name ?? '') ?>" 
                            placeholder="Search Name">
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label">Count</label>
+                    
                     <input type="number" name="count" class="form-control"
                            value="<?= esc($count ?? '') ?>" 
                            placeholder="Enter Count">
