@@ -53,9 +53,8 @@
     </div>
 </div>
 
-<!-- Email -->
 <div class="form-group">
-    <label>Email<span style="color:red;font-weight:700;">*</span></label>
+    <label>Email <span style="color:red;font-weight:700;">*</span></label>
     <input 
         class="form-control"
         type="email"
@@ -65,9 +64,8 @@
         value="<?= esc($user['email'] ?? '') ?>">
 </div>
 
-<!-- Mobile -->
 <div class="form-group">
-    <label for="phone">Mobile<span style="color:red;font-weight:700;">*</span></label>
+    <label for="phone">Mobile <span style="color:red;font-weight:700;">*</span></label>
     <input 
         id="phone" 
         type="tel" 
@@ -82,6 +80,7 @@
         id="country_code"
         value="<?= esc($user['country_code'] ?? '') ?>">
 </div>
+
 
 <!-- Password -->
 <div class="form-group">
@@ -105,7 +104,6 @@
 
             <div class="form-group">
                 <label>Confirm Password</label>
-                <input class="form-control" type="password" name="confirm_password" id="confirmPasswordInput"  placeholder="Leave blank to keep current password">
+                <input class="form-control" type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Leave blank to keep current password">
                 <small id="confirmError" class="text-danger font-bold"></small>
             </div>
-

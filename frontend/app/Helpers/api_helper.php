@@ -37,6 +37,13 @@ if (!function_exists('getApiBaseUrl')) {
     }
 }
 
+if (!function_exists('getEmployeeApiUrl')) {
+    function getEmployeeApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/employee' . $endpoint;
+    }
+}
+
 if (!function_exists('getAssetApiUrl')) {
     function getAssetApiUrl($endpoint = '')
     {

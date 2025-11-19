@@ -3,7 +3,7 @@
 namespace App\Controllers;
 use CodeIgniter\Controller;
 
-class UserController extends Controller
+class EmployeeController extends Controller
 {
     public function index()
     {
@@ -12,28 +12,29 @@ class UserController extends Controller
             return redirect()->to('/login')->with('error', 'Please login first');
         }
         $client = getApiClient();
-        $baseUrl = getApiBaseUrl();
+        $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
 
         try {
-            $response = $client->get($baseUrl . '/getAllAdmins', [
+            $response = $client->get($baseUrl . '/list', [
                 'headers' => $headers,
             ]);
 
             $result = json_decode($response->getBody(), true);
             $users = $result['data'] ?? [];
+            //dd($users);
         } catch (\Exception $e) {
             $users = [];
         }
 
-        return view('frontend/user/users-index', compact('users'));
+        return view('frontend/employee/employee-index', compact('users'));
     }
 
 
     public function filterUsers()
 {
     $client = getApiClient();
-    $baseUrl = getApiBaseUrl();
+    $baseUrl = getEmployeeApiUrl();
     $headers = getApiHeaders();
 
     $query = http_build_query([
@@ -44,7 +45,7 @@ class UserController extends Controller
     ]);
 
     try {
-        $response = $client->get($baseUrl . "/getAllAdmins?$query", [
+        $response = $client->get($baseUrl . "/list?$query", [
             'headers' => $headers,
         ]);
 
@@ -60,60 +61,10 @@ class UserController extends Controller
 }
 
 
-    public function getDesignations()
-    {
-        $client = getApiClient();
-        $headers = getApiHeaders();
-
-        try {
-            $response = $client->get('http://localhost:3000/api/designation/list', [
-                'headers' => $headers
-            ]);
-
-            $result = json_decode($response->getBody(), true);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'data' => $result['data'] ?? $result
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    public function getDepartments()
-    {
-        $client = getApiClient();
-        $headers = getApiHeaders();
-
-        try {
-            $response = $client->get('http://localhost:3000/api/department/list', [
-                'headers' => $headers
-            ]);
-
-            $result = json_decode($response->getBody(), true);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'data' => $result['data'] ?? $result
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
     public function store()
     {
         $client = getApiClient();
-        $baseUrl = getApiBaseUrl();
+        $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
         
         $data = array_filter([
@@ -128,7 +79,7 @@ class UserController extends Controller
         ], fn($v) => $v !== null && $v !== '');
         //log_message('debug',  $baseUrl); 
         try {
-            $response = $client->post($baseUrl . '/register', [
+            $response = $client->post($baseUrl . '/create', [
                 'headers' => $headers,
                 'form_params' => $data
             ]);
@@ -150,7 +101,7 @@ class UserController extends Controller
     public function update($id)
     {
         $client = getApiClient();
-        $baseUrl = getApiBaseUrl();
+        $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
 
         $data = array_filter([
@@ -190,7 +141,7 @@ class UserController extends Controller
     public function delete($id)
     {
         $client = getApiClient();
-        $baseUrl = getApiBaseUrl();
+        $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
 
         try {
@@ -259,7 +210,7 @@ class UserController extends Controller
         }
 
         $client = getApiClient();
-        $baseUrl = getApiBaseUrl();
+        $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
 
         try {
@@ -286,6 +237,6 @@ class UserController extends Controller
         $departments = $this->fetchDepartmentsList();
         $designations = $this->fetchDesignationsList();
 
-        return view('frontend/user/edit-form', compact('user', 'departments', 'designations'));
+        return view('frontend/employee/edit-form', compact('user', 'departments', 'designations'));
     }
 }

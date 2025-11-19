@@ -18,12 +18,43 @@
    <!-- THEME STYLES -->
 <link href="<?= base_url('assets/css/main.min.css') ?>" rel="stylesheet">
 <style>
+    .tooltip-btn:hover {
+    font-weight: bold;
+}
+.tooltip-btn:hover i {
+    font-weight: bold;
+}
     .fa-angle-down:before {
     content:none;
 }
 .page-sidebar ul li a {
     text-decoration: none;
 }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+#phone + label,
+.form-group label[for="phone"] {
+    display: block;
+    margin-bottom: 5px;
+}
+.iti {
+    width: 100% !important;
+    display: block !important;
+}
+.iti input {
+    width: 100% !important;
+}
+.valid-rule {
+    color: green;
+    font-weight: bold;
+}
+
+.invalid-rule {
+    color: red;
+}
+
 </style>
 </head>
 
@@ -71,7 +102,29 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script type="text/javascript">
-       
+     
+    //  $(function() {
+    //         $('#example-table').DataTable({
+    //             pageLength: 10,
+    //             ordering: false,
+    //             //"ajax": './assets/demo/data/table_data.json',
+    //             /*"columns": [
+    //                 { "data": "name" },
+    //                 { "data": "office" },
+    //                 { "data": "extn" },
+    //                 { "data": "start_date" },
+    //                 { "data": "salary" }
+    //             ]*/
+    //         });
+    //     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+})
+
 
 function editRecord(requestUrl, id) {
     console.log(requestUrl,id);
@@ -102,6 +155,79 @@ function editRecord(requestUrl, id) {
         }
     });
 }
+
+document.getElementById('addUserCanvas')
+    .addEventListener('shown.bs.offcanvas', function () {
+        initPasswordValidation();
+    });
+
+    document.getElementById('editUserCanvas')
+    .addEventListener('shown.bs.offcanvas', function () {
+        initPasswordValidation();
+    });
+
+    
+function initPasswordValidation() {
+
+// Find password fields inside the visible offcanvas
+let container =
+    document.querySelector("#editUserCanvas.show #editFormData") ||
+    document.querySelector("#addUserCanvas.show");
+
+if (!container) {
+    console.warn("No visible form found.");
+    return;
+}
+
+const passwordInput = container.querySelector("#passwordInput");
+const confirmPasswordInput = container.querySelector("#confirmPasswordInput");
+const confirmError = container.querySelector("#confirmError");
+
+const ruleUpper = container.querySelector("#ruleUpper");
+const ruleLower = container.querySelector("#ruleLower");
+const ruleNumber = container.querySelector("#ruleNumber");
+const ruleSpecial = container.querySelector("#ruleSpecial");
+const ruleLength = container.querySelector("#ruleLength");
+
+if (!passwordInput || !confirmPasswordInput) {
+    console.warn("Password fields not found in this form.");
+    return;
+}
+
+passwordInput.addEventListener("input", function () {
+    const password = passwordInput.value;
+
+    updateRule(ruleUpper, /[A-Z]/.test(password));
+    updateRule(ruleLower, /[a-z]/.test(password));
+    updateRule(ruleNumber, /[0-9]/.test(password));
+    updateRule(ruleSpecial, /[!@#$%^&*(),.?":{}|<>]/.test(password));
+    updateRule(ruleLength, password.length >= 8);
+
+    checkConfirmPassword();
+});
+
+confirmPasswordInput.addEventListener("input", checkConfirmPassword);
+
+function updateRule(el, isValid) {
+    if (!el) return;
+    el.classList.toggle("valid-rule", isValid);
+    el.classList.toggle("invalid-rule", !isValid);
+}
+
+function checkConfirmPassword() {
+    if (!confirmError) return;
+
+    if (confirmPasswordInput.value === "") {
+        confirmError.textContent = "";
+        return;
+    }
+
+    confirmError.textContent =
+        passwordInput.value === confirmPasswordInput.value ? "" : "Passwords do not match";
+}
+}
+
+
     </script>
 </body>
 </html>
