@@ -7,6 +7,7 @@ use CodeIgniter\Controller;
 class DesignationController extends Controller
 {
     public function index()
+
     {
         $token = session()->get('admin_token');
         if (!$token) {
@@ -16,19 +17,38 @@ class DesignationController extends Controller
         $headers = getApiHeaders();
         $apiBaseUrl = getDesignationApiUrl();
 
-        try {
-            $response = $client->get($apiBaseUrl . '/list', [
-                'headers' => $headers,
-            ]);
 
-            $result = json_decode($response->getBody(), true);
-            $designations = $result['data'] ?? [];
+    $name   = $this->request->getGet('name');
+    $status = $this->request->getGet('status');
 
-            return view('frontend/designation/designation-index', compact('designations'));
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setBody('Error fetching designations: ' . $e->getMessage());
+    try {
+        $response = $client->get($apiBaseUrl . '/list', [
+            'headers' => $headers,
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+        $designations = $result['data'] ?? [];
+
+        // Apply filters locally
+        if (!empty($name)) {
+            $designations = array_filter($designations, fn($d) => stripos($d['name'], $name) !== false);
         }
+        if (!empty($status)) {
+          //  $designations = array_filter($designations, fn($d) => strtolower($d['status']) == strtolower($status));
+
+          $designations = array_filter($designations, function($d) use ($status) {
+            return ($status == 'active'  && $d['status'] == 1) ||
+                   ($status == 'inactive' && $d['status'] == 0);
+        });
+        
+        }
+
+        return view('frontend/designation/designation-index', compact('designations', 'name', 'status'));
+    } catch (\Exception $e) {
+        return $this->response->setStatusCode(500)->setBody('Error fetching designations: ' . $e->getMessage());
     }
+}
+
 
     public function store()
     {

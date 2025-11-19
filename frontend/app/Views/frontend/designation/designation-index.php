@@ -11,6 +11,42 @@
 </div>
 
 <div class="page-content fade-in-up">
+
+<div class="page-content fade-in-up">
+
+Fiilter
+    <!-- ================= FILTER SECTION ================= -->
+    <div class="card mb-4 shadow-sm p-3 bg-light rounded">
+        <form method="GET" action="<?= base_url('designation-list') ?>">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control"
+                           value="<?= esc($name ?? '') ?>"
+                           placeholder="Search Name">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">-- Select Status --</option>
+                        <option value="active" <?= (isset($status) && $status=='active')?'selected':'' ?>>Active</option>
+                        <option value="inactive" <?= (isset($status) && $status=='inactive')?'selected':'' ?>>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <a href="<?= base_url('designation-list') ?>" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <!-- =============== END FILTER SECTION ================== -->
+
+    
     <div class="ibox">
         <div class="ibox-body">
             <table class="table table-striped table-bordered table-hover" id="example-table" cellspacing="0" width="100%">

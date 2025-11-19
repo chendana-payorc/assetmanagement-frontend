@@ -2,16 +2,55 @@
 <?= $this->section('content') ?>
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
+ 
+ 
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Assets List</h1>
     <button class="btn btn-primary my-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#addDepartmentCanvas" aria-controls="addDepartmentCanvas">
         Add Asset +
     </button>
 </div>
-
+ 
 <div class="page-content fade-in-up">
+
+Filter
+
+<!-- ================= FILTER SECTION ================= -->
+<div class="card mb-4 shadow-sm p-3 bg-light rounded">
+        <form method="GET" action="<?= base_url('asset-list') ?>">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-3">
+                    <label class="form-label">Model</label>
+                    <input type="text" name="model" class="form-control" 
+                           value="<?= esc($model ?? '') ?>" 
+                           placeholder="Search Model">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control" 
+                           value="<?= esc($name ?? '') ?>" 
+                           placeholder="Search Name">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Count</label>
+                    <input type="number" name="count" class="form-control"
+                           value="<?= esc($count ?? '') ?>" 
+                           placeholder="Enter Count">
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <a href="<?= base_url('asset-list') ?>" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <!-- =============== END FILTER SECTION ================== -->
+
     <div class="ibox">
         <div class="ibox-body">
             <table class="table table-striped table-bordered table-hover" id="example-table" cellspacing="0" width="100%">
@@ -46,7 +85,7 @@
     onclick="editRecord('<?= base_url('asset-edit') ?>', '<?= esc($dept['id']) ?>')">
     <i class="fa fa-edit"></i>
 </button>
-
+ 
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $dept['id'] ?>">
                                         <i class="fa fa-trash"></i>
                                     </button>
@@ -61,7 +100,7 @@
         </div>
     </div>
 </div>
-
+ 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addDepartmentCanvas" aria-labelledby="addDepartmentCanvasLabel">
   <div class="offcanvas-header">
     <h5 id="addDepartmentCanvasLabel">Create Asset</h5>
@@ -93,8 +132,8 @@
     </form>
   </div>
 </div>
-
-
+ 
+ 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="editDepartmentCanvas" aria-labelledby="editDepartmentCanvasLabel">
   <div class="offcanvas-header">
     <h5 id="editDepartmentCanvasLabel">Edit Asset</h5>
@@ -109,7 +148,7 @@
     </form>
   </div>
 </div>
-
+ 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 
@@ -129,17 +168,17 @@ $(function() {
         });
 
 $(document).ready(function() {
-
+ 
 $(document).on('submit', '#departmentForm', function(e) {
     e.preventDefault();
     const $form = $(this);
     const id = $form.find('#dept_id').val();
    
-
-    let url = id 
-        ? '<?= base_url('asset-update') ?>/' + id 
+ 
+    let url = id
+        ? '<?= base_url('asset-update') ?>/' + id
         : '<?= base_url('asset-store') ?>';
-
+ 
     $.ajax({
         url: url,
         method: 'POST',
@@ -156,10 +195,10 @@ $(document).on('submit', '#departmentForm', function(e) {
                     // ✅ Detect and close whichever offcanvas is open
                     const editCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('editDepartmentCanvas'));
                     const addCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('addDepartmentCanvas'));
-
+ 
                     if (editCanvas) editCanvas.hide();
                     if (addCanvas) addCanvas.hide();
-
+ 
                     // Reload table or page
                     location.reload();
                 });
@@ -180,11 +219,11 @@ $(document).on('submit', '#departmentForm', function(e) {
         }
     });
 });
-
-
+ 
+ 
 $('.deleteBtn').on('click', function() {
     let id = $(this).data('id');
-
+ 
     Swal.fire({
         title: 'Are you sure?',
         text: "This Asset will be permanently deleted.",
@@ -219,7 +258,7 @@ $('.deleteBtn').on('click', function() {
         }
     });
 });
-
+ 
 $('[data-bs-target="#addDepartmentCanvas"]').on('click', function() {
     $('#dept_id').val('');
     $('#dept_model').val('');
@@ -230,12 +269,12 @@ $('[data-bs-target="#addDepartmentCanvas"]').on('click', function() {
     $('#addDepartmentCanvasLabel').text('Create Asset');
     $('#submitBtn').text('Submit');
 });
-
-
-
+ 
+ 
+ 
 });
-
-
+ 
+ 
 </script>
-
+ 
 <?= $this->endSection() ?>
