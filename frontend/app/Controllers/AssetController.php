@@ -5,8 +5,14 @@ namespace App\Controllers;
 class AssetController extends BaseController
 {
     public function index()
-{
-    helper('api');
+
+    {
+        $token = session()->get('admin_token');
+        if (!$token) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+        helper('api');
+
 
     $client = getApiClient();
     $headers = getApiHeaders();

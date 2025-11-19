@@ -9,6 +9,32 @@
         Add Department +
     </button>
 </div>
+<div class="row m-3 p-3 ibox">
+    <h5 class="pb-2 mb-2">Filters</h5>
+    <div class="col-md-4">
+       
+        <input type="text" id="filterName" class="form-control" placeholder="Search Name">
+    </div>
+
+    <div class="col-md-4">
+       
+        <select id="filterStatus" class="form-control">
+            <option value="">All Status</option>
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-info btn-block" id="applyFilter">
+            <i class="fa fa-filter"></i> Filter
+        </button>
+    </div>
+    <div class="col-md-2">
+        <button id="resetFilter" class="btn btn-secondary btn-block">Reset</button>
+    </div>
+</div>
+
 
 <div class="page-content fade-in-up">
     <div class="ibox">
@@ -197,6 +223,54 @@ $('[data-bs-target="#addDepartmentCanvas"]').on('click', function() {
 
 
 });
+
+$(document).ready(function () {
+
+// Initialize DataTable
+var table = $('#example-table').DataTable({
+    pageLength: 10,
+    ordering: false
+});
+
+$('#applyFilter').on('click', function () {
+
+    var name = $('#filterName').val().trim();      
+    var status = $('#filterStatus').val().trim();  
+
+    table.column(0).search(name, false, true);
+
+    if (status === "") {
+        table.column(1).search("");  // no filter
+    } 
+    else if (status === "1") {
+        table.column(1).search("^Active$", true, false); 
+    } 
+    else if (status === "0") {
+        table.column(1).search("^Inactive$", true, false); 
+    }
+
+    table.draw();  
+});
+
+$('#resetFilter').on('click', function () {
+    $('#filterName').val('');
+    $('#filterStatus').val('');
+
+    table.columns().search('');  
+    table.search('');           
+
+    table.draw(); 
+});
+
+$('#filterName').on('keypress', function (e) {
+    if (e.which === 13) {
+        $('#applyFilter').click();
+    }
+});
+
+});
+
+
 </script>
 
 <?= $this->endSection() ?>

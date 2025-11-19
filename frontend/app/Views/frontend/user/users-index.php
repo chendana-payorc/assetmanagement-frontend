@@ -14,6 +14,40 @@
     </button>
 </div>
 
+<div class="row m-3 p-3 ibox">
+    <h5 class="pb-2 mb-2">Filters</h5>
+    <div class="col-md-2">
+        <input type="text" id="filterName" class="form-control" placeholder="Search by Name">
+    </div>
+
+    <div class="col-md-2">
+        <input type="text" id="filterEmail" class="form-control" placeholder="Search by Email">
+    </div>
+
+    <div class="col-md-2">
+        <select id="filterDepartment" class="form-control">
+            <option value="">All Departments</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select id="filterDesignation" class="form-control">
+            <option value="">All Designations</option>
+        </select>
+    </div>
+
+
+
+    <div class="col-md-2">
+        <button id="applyFilter" class="btn btn-info btn-block"> <i class="fa fa-filter"></i>Filter</button>
+    </div>
+    <div class="col-md-2">
+        <button id="resetFilter" class="btn btn-secondary btn-block">Reset</button>
+    </div>
+
+    </div>
+
+
 <div class="page-content fade-in-up">
     <div class="ibox">
         <div class="ibox-body">
@@ -142,6 +176,7 @@
  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script>
+
     $(document).ready(function() {
 // Load intl-tel-input dynamically then initialize
 const loadIntlTelInput = () => {
@@ -569,6 +604,105 @@ function edit(url, id) {
     });
 }
 
+
+$(document).ready(function () {
+
+let userTable = $('#example-table').DataTable({
+    pageLength: 10,
+    ordering: false
+});
+
+loadDepartments();
+loadDesignations();
+loadUsers(); 
+
+$("#applyFilter").on("click", function () {
+    loadUsers();
+});
+
+$("#resetFilter").on("click", function () {
+    $("#filterName").val('');
+    $("#filterEmail").val('');
+    $("#filterDepartment").val('');
+    $("#filterDesignation").val('');
+    loadUsers();
+});
+
+
+function loadDepartments() {
+    $.ajax({
+        url: "<?= base_url('departments') ?>",
+        method: "GET",
+        success: function (res) {
+            if (res.success) {
+                let html = '<option value="">All Departments</option>';
+                res.data.forEach(d => {
+                    html += `<option value="${d.id}">${d.name}</option>`;
+                });
+                $("#filterDepartment").html(html);
+            }
+        }
+    });
+}
+
+function loadDesignations() {
+    $.ajax({
+        url: "<?= base_url('designations') ?>",
+        method: "GET",
+        success: function (res) {
+            if (res.success) {
+                let html = '<option value="">All Designations</option>';
+                res.data.forEach(d => {
+                    html += `<option value="${d.id}">${d.name}</option>`;
+                });
+                $("#filterDesignation").html(html);
+            }
+        }
+    });
+}
+
+function loadUsers() {
+    $.ajax({
+        url: "<?= base_url('filter-users') ?>",
+        method: "GET",
+        data: {
+            name: $("#filterName").val(),
+            email: $("#filterEmail").val(),
+            department_id: $("#filterDepartment").val(),
+            designation_id: $("#filterDesignation").val()
+        },
+        success: function (res) {
+
+            let rows = [];
+
+            if (res.success && res.data.length > 0) {
+                res.data.forEach(u => {
+                    rows.push([
+                        u.name,
+                        u.email,
+                        (u.country_code ? '+' + u.country_code : '') + ' ' + u.phone_number,
+                        u.department_name,
+                        u.designation_name,
+                        `
+                        <button class="btn btn-sm btn-primary" onclick="edit('<?= base_url('user-edit') ?>', '${u.id}')">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger deleteBtn" data-id="${u.id}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                        `
+                    ]);
+                });
+            }
+
+            userTable.clear();
+            userTable.rows.add(rows);
+            userTable.draw();
+        }
+    });
+}
+
+});
 
 </script>
 <?= $this->endSection() ?>

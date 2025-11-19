@@ -7,10 +7,16 @@ use CodeIgniter\Controller;
 class DesignationController extends Controller
 {
     public function index()
-{
-    $client = getApiClient();
-    $headers = getApiHeaders();
-    $apiBaseUrl = getDesignationApiUrl();
+
+    {
+        $token = session()->get('admin_token');
+        if (!$token) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = getDesignationApiUrl();
+
 
     $name   = $this->request->getGet('name');
     $status = $this->request->getGet('status');

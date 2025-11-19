@@ -8,6 +8,10 @@ class DepartmentController extends Controller
 {
     public function index()
     {
+        $token = session()->get('admin_token');
+        if (!$token) {
+            return redirect()->to('/login')->with('error', 'Please login first');
+        }
         helper('api');
 
         $client = getApiClient();
@@ -15,11 +19,15 @@ class DepartmentController extends Controller
 
         $response = $client->get(getDepartmentApiUrl('/list'), [
             'headers' => $headers,
-        ]);
-
+            'query' => [
+                'name' => $this->request->getGet('name'),
+                'status' => $this->request->getGet('status')
+            ]
+        ]);     
+        
         $result = json_decode($response->getBody(), true);
         $departments = $result['data'] ?? [];
-
+        //dd($departments);
         return view('frontend/department/department-index', compact('departments'));
     }
 
