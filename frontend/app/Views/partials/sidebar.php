@@ -8,13 +8,7 @@
                             <span class="nav-label">Dashboard</span>
                         </a>
                     </li>
-                    <li class="heading">Asset Management</li>
-                   
-                    <li>
-                        <a href="<?= base_url('asset-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
-                            <span class="nav-label">Asset Details</span>
-                        </a>
-                    </li>
+                    
                     <li class="heading">User Management</li>
                     <li>
                         <a href="<?= base_url('users-list') ?>"><i class="sidebar-item-icon fa fa-user"></i>
@@ -37,7 +31,20 @@
     </a>
 </li>
 
+
                    
+                    <li class="heading">Asset Management</li>
+                   
+                    <li>
+                        <a href="<?= base_url('asset-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
+                            <span class="nav-label">Asset Details</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('employee-list') ?>"><i class="sidebar-item-icon fa fa-cog"></i>
+                            <span class="nav-label">Settings</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>

@@ -7,11 +7,11 @@
 
 
 <div class="page-heading d-flex justify-content-between">
-    <h1 class="page-title">Admin List</h1>
+    <h1 class="page-title">Employee List</h1>
   
     <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addUserCanvas" aria-controls="addUserCanvas"
     title="Add">
-    <i class="fa fa-plus mx-2"></i> Add User
+    <i class="fa fa-plus mx-2"></i> Add Employee
     </button>
 </div>
 
@@ -91,10 +91,10 @@
                                 <td><?= esc($user['designation_name'] ?? '') ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-primary editBtn tooltip-btn" 
-                                    
+                                   
                                     title="Edit"
                                         data-id="<?= esc($user['id'] ?? '') ?>" 
-                                        onclick="edit('<?= base_url('user-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
+                                        onclick="edit('<?= base_url('employee-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
                                         <i class="fa fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-id="<?= esc($user['id'] ?? '') ?>"
@@ -106,7 +106,7 @@
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="6" class="text-center">No users found.</td></tr>
+                        <tr><td colspan="6" class="text-center">No employees found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -116,7 +116,7 @@
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addUserCanvas" aria-labelledby="addUserCanvasLabel">
   <div class="offcanvas-header">
-    <h5 id="addUserCanvasLabel">Create User</h5>
+    <h5 id="addUserCanvasLabel">Create Employee</h5>
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
@@ -155,6 +155,7 @@
                 <label>Password<span style="color:red;font-weight:700;">*</span></label>
                 <input class="form-control" type="password" name="password" id="passwordInput" placeholder="Enter Password">
             </div>
+              
             <small id="passwordRules" class="text-muted">
                 <ul style="padding-left:15px; margin-top:5px;">
                     <li id="ruleUpper">One uppercase letter (A-Z)</li>
@@ -168,9 +169,8 @@
             <div class="form-group">
                 <label>Confirm Password <span style="color:red;font-weight:700;">*</span></label>
                 <input class="form-control" type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Confirm Password">
-                <small id="confirmError" class="text-danger font-bold"></small>
+                <small id="confirmError" class="text-danger"></small>
             </div>
-
 
         <div class="form-group mt-3">
             <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
@@ -182,7 +182,7 @@
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="editUserCanvas" aria-labelledby="editUserCanvasLabel">
   <div class="offcanvas-header">
-    <h5 id="editUserCanvasLabel">Update User</h5>
+    <h5 id="editUserCanvasLabel">Update Employee</h5>
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
@@ -199,8 +199,12 @@
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script>
 
-$(document).ready(function() {
-// Load intl-tel-input dynamically then initialize
+
+
+    $(document).ready(function() {
+
+
+        
 const loadIntlTelInput = () => {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -239,8 +243,8 @@ loadIntlTelInput().then(() => {
     console.error('Failed to load phone input library');
 });
 
-const storeUrl = '<?= base_url('user-store') ?>';
-const updateUrl = '<?= base_url('user-update') ?>';
+const storeUrl = '<?= base_url('employee-store') ?>';
+const updateUrl = '<?= base_url('employee-update') ?>';
 
 const resetFormState = () => {
     $('#createUserForm')[0].reset();
@@ -249,7 +253,7 @@ const resetFormState = () => {
     $('#designationSelect').val('');
     $('#departmentSelect').val('');
     $('#submitBtn').text('Submit');
-    $('#addUserCanvasLabel').text('Create User');
+    $('#addUserCanvasLabel').text('Create Employee');
     $('#passwordInput').attr('placeholder', 'Enter Password');
     if (itiInstance) {
         itiInstance.setCountry('in');
@@ -408,7 +412,7 @@ $(document).on('submit', '#createUserForm', function(e){
         data: $form.serialize(),
         success: function(response){
             if (response.success) {
-                const successMessage = response.message || (userId ? 'User updated successfully!' : 'User added successfully!');
+                const successMessage = response.message || (userId ? 'Employee updated successfully!' : 'Employee added successfully!');
                 Swal.fire({
                     icon: 'success',
                     title: 'Success!',
@@ -465,7 +469,7 @@ $('table').on('click', '.deleteBtn', function() {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '<?= base_url('user-delete') ?>/' + id,
+                url: '<?= base_url('employee-delete') ?>/' + id,
                 method: 'DELETE',
                 success: function(response) {
     
@@ -473,7 +477,7 @@ $('table').on('click', '.deleteBtn', function() {
         Swal.fire({
             icon: 'success',
             title: 'Deleted!',
-            text: 'User deleted successfully',
+            text: 'Employee deleted successfully',
             showConfirmButton: false,
             timer: 1200
         }).then(() => location.reload());
@@ -500,6 +504,7 @@ $('table').on('click', '.deleteBtn', function() {
 
 $('#addUserCanvas').on('hidden.bs.offcanvas', function() {
     resetFormState();
+    
 });
 
 
@@ -548,6 +553,7 @@ function edit(url, id) {
           
             $('#editFormData').html(response);
             initPasswordValidation();
+            
             
             window.editFormItiInstance = null;
             
@@ -606,7 +612,7 @@ function edit(url, id) {
             setTimeout(initPhoneInput, 100);
            
             $('#editUserCanvas #submitBtn').text('Update');
-            $('#editUserCanvasLabel').text('Update User');
+            $('#editUserCanvasLabel').text('Update Employee');
            
             const canvasEl = document.getElementById('editUserCanvas');
             const offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
@@ -626,6 +632,8 @@ function edit(url, id) {
         }
     });
 }
+
+
 
 
 $(document).ready(function () {
@@ -686,7 +694,7 @@ function loadDesignations() {
 
 function loadUsers() {
     $.ajax({
-        url: "<?= base_url('filter-users') ?>",
+        url: "<?= base_url('filter-employee') ?>",
         method: "GET",
         data: {
             name: $("#filterName").val(),
@@ -707,11 +715,11 @@ function loadUsers() {
                         u.department_name,
                         u.designation_name,
                         `
-                        <button class="btn btn-sm btn-primary tooltip-btn" data-bs-toggle="tooltip"
-                                    title="Edit" onclick="edit('<?= base_url('user-edit') ?>', '${u.id}')">
+                        <button class="btn btn-sm btn-primary tooltip-btn"
+                                    title="Edit" onclick="edit('<?= base_url('employee-edit') ?>', '${u.id}')">
                             <i class="fa fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-bs-toggle="tooltip"
+                        <button class="btn btn-sm btn-danger deleteBtn tooltip-btn"
                                     title="Delete" data-id="${u.id}">
                             <i class="fa fa-trash"></i>
                         </button>
@@ -728,8 +736,6 @@ function loadUsers() {
 }
 
 });
-
-
 
 </script>
 <?= $this->endSection() ?>
