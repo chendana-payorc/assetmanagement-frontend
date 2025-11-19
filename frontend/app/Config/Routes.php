@@ -40,6 +40,13 @@ $routes->post('/designation-edit', 'DesignationController::editRecord');
 $routes->post('/designation-update/(:any)', 'DesignationController::update/$1');
 $routes->delete('/designation-delete/(:any)', 'DesignationController::delete/$1');
 
+$routes->get('/organization-list', 'OrganizationController::index');
+$routes->post('/organization-store', 'OrganizationController::store');
+$routes->post('/organization-edit', 'OrganizationController::editRecord');
+$routes->post('/organization-update/(:any)', 'OrganizationController::update/$1');
+$routes->delete('/organization-delete/(:any)', 'OrganizationController::delete/$1');
+
+
 
 
 // $routes->group('admin', function($routes) {

@@ -56,5 +56,14 @@ if (!function_exists('getDesignationApiUrl')) {
     {
         return rtrim(env('API_BASE_URL'), '/') . '/designation' . $endpoint;
     }
+    
 }
+
+if (!function_exists('getOrganizationApiUrl')) {
+    function getOrganizationApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/organization' . $endpoint;
+    }
+}
+
 
