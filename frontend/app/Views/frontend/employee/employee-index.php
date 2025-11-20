@@ -76,8 +76,8 @@
                     </tr>
                 </tfoot>
                 <tbody>
-                    <?php if (!empty($users)): ?>
-                        <?php foreach ($users as $user): ?>
+                    <?php if (!empty($employees)): ?>
+                        <?php foreach ($employees as $user): ?>
                             <tr>
                                 <td><?= esc($user['name'] ?? $user['Name'] ?? '') ?></td>
                                 <td><?= esc($user['email'] ?? '') ?></td>

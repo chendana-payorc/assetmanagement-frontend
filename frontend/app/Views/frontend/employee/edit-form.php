@@ -1,9 +1,9 @@
 <!-- Hidden Fields -->
-<input type="hidden" id="userId" name="userId" value="<?= esc($user['id'] ?? '') ?>">
-<input type="hidden" id="encryptedDesignationId" name="encryptedDesignationId" value="<?= esc($user['encrypted_designation_id'] ?? ($user['designation_id'] ?? '')) ?>">
-<input type="hidden" id="encryptedDepartmentId" name="encryptedDepartmentId" value="<?= esc($user['encrypted_department_id'] ?? ($user['department_id'] ?? '')) ?>">
+<input type="hidden" id="userId" name="userId" value="<?= esc($employee['id'] ?? '') ?>">
+<input type="hidden" id="encryptedDesignationId" name="encryptedDesignationId" value="<?= esc($employee['encrypted_designation_id'] ?? ($employee['designation_id'] ?? '')) ?>">
+<input type="hidden" id="encryptedDepartmentId" name="encryptedDepartmentId" value="<?= esc($employee['encrypted_department_id'] ?? ($employee['department_id'] ?? '')) ?>">
 
-<!-- <?php print_r($user)?> -->
+<!-- <?php print_r($employee)?> -->
 
 <div class="form-group">
     <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
@@ -13,7 +13,7 @@
         name="name"
         id="nameInput"
         placeholder="Enter Name"
-        value="<?= esc($user['name'] ?? $user['Name'] ?? '') ?>">
+        value="<?= esc($employee['name'] ?? $employee['Name'] ?? '') ?>">
 </div>
 
 <!-- Designation & Department -->
@@ -27,7 +27,7 @@
     <option value="">Select Designation</option>
     <?php foreach ($designations as $designation): ?>
         <option value="<?= esc($designation['id']) ?>" 
-            <?= (!empty($user['encrypted_designation_id']) && $user['encrypted_designation_id'] === $designation['id']) ? 'selected' : '' ?>>
+            <?= (!empty($employee['encrypted_designation_id']) && $employee['encrypted_designation_id'] === $designation['id']) ? 'selected' : '' ?>>
             <?= esc($designation['name']) ?>
         </option>
     <?php endforeach; ?>
@@ -45,7 +45,7 @@
     <option value="">Select Department</option>
     <?php foreach ($departments as $department): ?>
         <option value="<?= esc($department['id']) ?>" 
-            <?= (!empty($user['encrypted_department_id']) && $user['encrypted_department_id'] === $department['id']) ? 'selected' : '' ?>>
+            <?= (!empty($employee['encrypted_department_id']) && $employee['encrypted_department_id'] === $department['id']) ? 'selected' : '' ?>>
             <?= esc($department['name']) ?>
         </option>
     <?php endforeach; ?>
@@ -61,7 +61,7 @@
         name="email"
         id="emailInput"
         placeholder="Enter Email"
-        value="<?= esc($user['email'] ?? '') ?>">
+        value="<?= esc($employee['email'] ?? '') ?>">
 </div>
 
 <div class="form-group">
@@ -72,13 +72,13 @@
         name="phone_number" 
         class="form-control"
         placeholder="Enter phone number"
-        value="<?= esc($user['phone_number'] ?? '') ?>">
+        value="<?= esc($employee['phone_number'] ?? '') ?>">
 
     <input 
         type="hidden" 
         name="country_code" 
         id="country_code"
-        value="<?= esc($user['country_code'] ?? '') ?>">
+        value="<?= esc($employee['country_code'] ?? '') ?>">
 </div>
 
 
