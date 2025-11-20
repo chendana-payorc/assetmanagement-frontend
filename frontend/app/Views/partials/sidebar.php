@@ -31,6 +31,12 @@
                         </a>
                     </li>
 
+
+
+                   
+
+
+
                        
                    
                     <li class="heading">Asset Management</li>
@@ -40,7 +46,15 @@
                             <span class="nav-label">Asset Details</span>
                         </a>
                     </li>
-                    <li>
+                   
+
+<li>
+    <a href="<?= base_url('supplier-list') ?>"><i class="sidebar-item-icon fa fa-truck"></i>
+        <span class="nav-label">Asset Supplier</span>
+    </a>
+</li>
+
+
                         <a href="<?= base_url('assetcategory-list') ?>"><i class="sidebar-item-icon fa fa-file-text"></i>
                             <span class="nav-label">Asset Category</span>
                         </a>
@@ -50,6 +64,7 @@
                             <span class="nav-label">Organization</span>
                         </a>
                     </li>
+
                 </ul>
             </div>
         </nav>
