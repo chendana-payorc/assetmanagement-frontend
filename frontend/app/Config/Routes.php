@@ -54,6 +54,13 @@ $routes->post('/organization-edit', 'OrganizationController::editRecord');
 $routes->post('/organization-update/(:any)', 'OrganizationController::update/$1');
 $routes->delete('/organization-delete/(:any)', 'OrganizationController::delete/$1');
 
+$routes->get('/supplier-list', 'SupplierController::index');
+$routes->post('/supplier-store', 'SupplierController::store');
+$routes->post('/supplier-edit', 'SupplierController::editRecord');
+$routes->post('/supplier-update/(:any)', 'SupplierController::update/$1');
+$routes->delete('/supplier-delete/(:any)', 'SupplierController::delete/$1');
+
+
 
 
 

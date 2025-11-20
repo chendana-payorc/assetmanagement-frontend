@@ -73,4 +73,12 @@ if (!function_exists('getOrganizationApiUrl')) {
     }
 }
 
+if (!function_exists('getSupplierApiUrl')) {
+    function getSupplierApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/supplier' . $endpoint;
+    }
+}
+
+
 
