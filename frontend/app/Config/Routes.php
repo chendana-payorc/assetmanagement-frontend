@@ -35,6 +35,13 @@ $routes->post('/asset-edit', 'AssetController::editRecord');
 $routes->post('/asset-update/(:any)', 'AssetController::update/$1');
 $routes->delete('/asset-delete/(:any)', 'AssetController::delete/$1');
 
+$routes->get('assetcategory-list', 'AssetCategoryController::index');
+$routes->get('assetcategory', 'AssetCategoryController::fetch'); 
+$routes->post('/assetcategory-store', 'AssetCategoryController::store');
+$routes->post('/assetcategory-edit', 'AssetCategoryController::editRecord');
+$routes->post('assetcategory-update/(:any)', 'AssetCategoryController::update/$1');
+$routes->delete('assetcategory-delete/(:any)', 'AssetCategoryController::delete/$1');
+
 $routes->get('department-list', 'DepartmentController::index');
 $routes->get('department', 'DepartmentController::fetch'); 
 $routes->post('/department-store', 'DepartmentController::store');

@@ -73,10 +73,20 @@ if (!function_exists('getOrganizationApiUrl')) {
     }
 }
 
+
 if (!function_exists('getSupplierApiUrl')) {
     function getSupplierApiUrl($endpoint = '')
     {
         return rtrim(env('API_BASE_URL'), '/') . '/supplier' . $endpoint;
+    }
+}
+
+
+
+if (!function_exists('getAssetCategoryApiUrl')) {
+    function getAssetCategoryApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/assetcategory' . $endpoint;
     }
 }
 
