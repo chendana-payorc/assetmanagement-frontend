@@ -21,13 +21,13 @@ class EmployeeController extends Controller
             ]);
 
             $result = json_decode($response->getBody(), true);
-            $users = $result['data'] ?? [];
-            //dd($users);
+            $employees = $result['data'] ?? [];
+           
         } catch (\Exception $e) {
             $users = [];
         }
 
-        return view('frontend/employee/employee-index', compact('users'));
+        return view('frontend/employee/employee-index', compact('employees'));
     }
 
 
@@ -219,9 +219,9 @@ class EmployeeController extends Controller
             ]);
 
             $result = json_decode($response->getBody(), true);
-            $user = $result['data'] ?? null;
+            $employee = $result['data'] ?? null;
 
-            if (!$user) {
+            if (!$employee) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
                     'error' => 'User not found'
@@ -237,6 +237,6 @@ class EmployeeController extends Controller
         $departments = $this->fetchDepartmentsList();
         $designations = $this->fetchDesignationsList();
 
-        return view('frontend/employee/edit-form', compact('user', 'departments', 'designations'));
+        return view('frontend/employee/edit-form', compact('employee', 'departments', 'designations'));
     }
 }

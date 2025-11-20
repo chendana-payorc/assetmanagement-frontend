@@ -31,13 +31,6 @@
                         </a>
                     </li>
 
-
-                    <li>
-    <a href="<?= base_url('organization-list') ?>"><i class="sidebar-item-icon fa fa-building"></i>
-        <span class="nav-label">Organization</span>
-    </a>
-</li>
-
                        
                    
                     <li class="heading">Asset Management</li>
@@ -48,8 +41,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?= base_url('employee-list') ?>"><i class="sidebar-item-icon fa fa-cog"></i>
-                            <span class="nav-label">Settings</span>
+                        <a href="<?= base_url('assetcategory-list') ?>"><i class="sidebar-item-icon fa fa-file-text"></i>
+                            <span class="nav-label">Asset Category</span>
+                        </a>
+                    </li>
+                    <li>
+                    <a href="<?= base_url('organization-list') ?>"><i class="sidebar-item-icon fa fa-building"></i>
+                            <span class="nav-label">Organization</span>
                         </a>
                     </li>
                 </ul>
