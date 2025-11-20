@@ -13,14 +13,16 @@ class OrganizationController extends Controller
             return redirect()->to('/login')->with('error', 'Please login first');
         }
 
-        $client     = getApiClient();
-        $headers    = getApiHeaders();
-        $apiBaseUrl = getOrganizationApiUrl(); // ✅ FIXED
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
 
         // Filters
         $name       = $this->request->getGet('name');
         $email      = $this->request->getGet('email');
         $contact_no = $this->request->getGet('contact_no');
+        $address    = $this->request->getGet('address');
         $country    = $this->request->getGet('country');
         $state      = $this->request->getGet('state');
         $city       = $this->request->getGet('city');
@@ -44,6 +46,9 @@ class OrganizationController extends Controller
             if (!empty($contact_no)) {
                 $organizations = array_filter($organizations, fn($o) => stripos($o['contact_no'], $contact_no) !== false);
             }
+            if (!empty($address)) {
+                $organizations = array_filter($organizations, fn($o) => stripos($o['address'], $address) !== false);
+            }
             if (!empty($country)) {
                 $organizations = array_filter($organizations, fn($o) => stripos($o['country'], $country) !== false);
             }
@@ -62,6 +67,7 @@ class OrganizationController extends Controller
                 'name',
                 'email',
                 'contact_no',
+                'address',
                 'country',
                 'state',
                 'city',
@@ -74,9 +80,9 @@ class OrganizationController extends Controller
 
     public function store()
     {
-        $client     = getApiClient();
-        $headers    = getApiHeaders();
-        $apiBaseUrl = getOrganizationApiUrl(); // ✅ FIXED
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
 
         try {
             $response = $client->post($apiBaseUrl . '/create', [
@@ -85,6 +91,7 @@ class OrganizationController extends Controller
                     'name'       => $this->request->getPost('name'),
                     'email'      => $this->request->getPost('email'),
                     'contact_no' => $this->request->getPost('contact_no'),
+                    'address'    => $this->request->getPost('address'),
                     'country'    => $this->request->getPost('country'),
                     'state'      => $this->request->getPost('state'),
                     'city'       => $this->request->getPost('city'),
@@ -103,9 +110,9 @@ class OrganizationController extends Controller
 
     public function update($id)
     {
-        $client     = getApiClient();
-        $headers    = getApiHeaders();
-        $apiBaseUrl = getOrganizationApiUrl(); // ✅ FIXED
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
 
         try {
             $response = $client->put($apiBaseUrl . '/update/' . $id, [
@@ -114,6 +121,7 @@ class OrganizationController extends Controller
                     'name'       => $this->request->getPost('name'),
                     'email'      => $this->request->getPost('email'),
                     'contact_no' => $this->request->getPost('contact_no'),
+                    'address'    => $this->request->getPost('address'),
                     'country'    => $this->request->getPost('country'),
                     'state'      => $this->request->getPost('state'),
                     'city'       => $this->request->getPost('city'),
@@ -132,9 +140,9 @@ class OrganizationController extends Controller
 
     public function delete($id)
     {
-        $client     = getApiClient();
-        $headers    = getApiHeaders();
-        $apiBaseUrl = getOrganizationApiUrl(); // ✅ FIXED
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
 
         try {
             $client->delete($apiBaseUrl . '/delete/' . $id, [
@@ -157,9 +165,9 @@ class OrganizationController extends Controller
     {
         $id = $this->request->getPost('id');
 
-        $client     = getApiClient();
-        $headers    = getApiHeaders();
-        $apiBaseUrl = getOrganizationApiUrl(); // ✅ FIXED
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
 
         try {
             $response = $client->get($apiBaseUrl . '/get/' . $id, [

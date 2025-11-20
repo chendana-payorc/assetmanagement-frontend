@@ -18,7 +18,7 @@
             <div class="row g-3 align-items-end">
 
                 <div class="col-md-3">
-                    <label class="form-label">Organization Name</label>
+                    <label class="form-label">Name</label>
                     <input type="text" name="name" class="form-control" value="<?= esc($name ?? '') ?>" placeholder="Search Name">
                 </div>
 
@@ -30,6 +30,11 @@
                 <div class="col-md-3">
                     <label class="form-label">Contact No</label>
                     <input type="text" name="contact_no" class="form-control" value="<?= esc($contact_no ?? '') ?>" placeholder="Search Contact No">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="address" class="form-control" value="<?= esc($address ?? '') ?>" placeholder="Search Address">
                 </div>
 
                 <div class="col-md-3">
@@ -70,6 +75,7 @@
                         <th>Organization Name</th>
                         <th>Email</th>
                         <th>Contact No</th>
+                        <th>Address</th>
                         <th>Country</th>
                         <th>State</th>
                         <th>City</th>
@@ -82,6 +88,7 @@
                         <th>Organization Name</th>
                         <th>Email</th>
                         <th>Contact No</th>
+                        <th>Address</th>
                         <th>Country</th>
                         <th>State</th>
                         <th>City</th>
@@ -96,13 +103,13 @@
                                 <td><?= esc($org['name']) ?></td>
                                 <td><?= esc($org['email']) ?></td>
                                 <td><?= esc($org['contact_no']) ?></td>
+                                <td><?= esc($org['address']) ?></td>
                                 <td><?= esc($org['country']) ?></td>
                                 <td><?= esc($org['state']) ?></td>
                                 <td><?= esc($org['city']) ?></td>
                                 <td><?= esc($org['zipcode']) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn"
-                                        onclick="editRecord('<?= base_url('organization-edit') ?>', '<?= esc($org['id']) ?>')">
+                                    <button class="btn btn-sm btn-primary editBtn" data-id="<?= $org['id'] ?>">
                                         <i class="fa fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $org['id'] ?>">
@@ -112,13 +119,12 @@
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="8" class="text-center">No organizations found.</td></tr>
+                        <tr><td colspan="9" class="text-center">No organizations found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
-
 </div>
 
 <!-- ================= OFFCANVAS CREATE ================= -->
@@ -131,35 +137,39 @@
         <form id="organizationForm">
             <input type="hidden" name="id" id="org_id">
             <div class="form-group mb-3">
-                <label class="required">Organization Name<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">Organization Name<span style="color:red">*</span></label>
                 <input class="form-control" type="text" name="name" placeholder="Enter Name">
             </div>
             <div class="form-group mb-3">
-                <label class="required">Email<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">Email<span style="color:red">*</span></label>
                 <input type="email" name="email" class="form-control" placeholder="Enter Email">
             </div>
             <div class="form-group mb-3">
-                <label class="required">Contact No<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">Contact No<span style="color:red">*</span></label>
                 <input type="text" name="contact_no" class="form-control" placeholder="Enter Contact No">
             </div>
             <div class="form-group mb-3">
-                <label class="required">Country<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">Address<span style="color:red">*</span></label>
+                <input type="text" name="address" class="form-control" placeholder="Enter Address">
+            </div>
+            <div class="form-group mb-3">
+                <label class="required">Country<span style="color:red">*</span></label>
                 <input type="text" name="country" class="form-control" placeholder="Enter Country">
             </div>
             <div class="form-group mb-3">
-                <label class="required">State<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">State<span style="color:red">*</span></label>
                 <input type="text" name="state" class="form-control" placeholder="Enter State">
             </div>
             <div class="form-group mb-3">
-                <label class="required">City<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">City<span style="color:red">*</span></label>
                 <input type="text" name="city" class="form-control" placeholder="Enter City">
             </div>
             <div class="form-group mb-3">
-                <label class="required">Zipcode<span style="color:red;font-weight:700">*</span></label>
+                <label class="required">Zipcode<span style="color:red">*</span></label>
                 <input type="text" name="zipcode" class="form-control" placeholder="Enter Zipcode">
             </div>
             <div class="form-group">
-                <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+                <button class="btn btn-primary" type="submit">Submit</button>
             </div>
         </form>
     </div>
@@ -174,8 +184,9 @@
     <div class="offcanvas-body">
         <form id="organizationEditForm">
             <div id="editFormData"></div>
-            <div class="form-group">
-                <button class="btn btn-primary" type="submit" id="submitEditBtn">Submit</button>
+            <div class="d-flex justify-content-between mt-3">
+                <button class="btn btn-primary" type="submit">Update</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="offcanvas">Cancel</button>
             </div>
         </form>
     </div>
@@ -183,79 +194,51 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(function() {
-    $('#organization-table').DataTable({
-        pageLength: 10,
-        ordering: false,
-    });
+$(document).ready(function() {
+    $('#organization-table').DataTable({ pageLength: 10, ordering: false });
 
-    // Create Organization
-    $(document).on('submit', '#organizationForm', function(e) {
+    // CREATE
+    $('#organizationForm').submit(function(e) {
         e.preventDefault();
-        const $form = $(this);
-        const id = $form.find('#org_id').val();
-        let url = id ? '<?= base_url('organization-update') ?>/' + id : '<?= base_url('organization-store') ?>';
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: $form.serialize(),
-            success: function(response) {
-                if (response.success || response.status === 'success') {
-                    Swal.fire({icon:'success', title:'Success!', text: response.message, showConfirmButton:false, timer:1500})
-                    .then(()=> location.reload());
-                } else {
-                    Swal.fire({icon:'error', title:'Error!', text: response.message || 'Something went wrong!'});
-                }
-            },
-            error: function(xhr) {
-                Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.error || 'Something went wrong!'});
-            }
-        });
+        $.post('<?= base_url('organization-store') ?>', $(this).serialize(), function(response){
+            if(response.success){ location.reload(); }
+            else{ alert(response.error || 'Error creating organization'); }
+        }, 'json');
     });
 
-    // Delete Organization
-    $('.deleteBtn').on('click', function() {
+    // DELETE
+    $('.deleteBtn').click(function() {
         let id = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This organization will be permanently deleted.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: '<?= base_url('organization-delete') ?>/' + id,
-                    method: 'DELETE',
-                    success: function(response) {
-                        Swal.fire({icon:'success', title:'Deleted!', text: response.message, showConfirmButton:false, timer:1500})
-                        .then(()=> location.reload());
-                    },
-                    error: function(xhr) {
-                        Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.error || 'Failed to delete'});
-                    }
-                });
-            }
+        if(confirm('Are you sure you want to delete this organization?')) {
+            $.ajax({
+                url: '<?= base_url('organization-delete') ?>/'+id,
+                type: 'DELETE',
+                success: function(){ location.reload(); },
+                error: function(){ alert('Delete failed'); }
+            });
+        }
+    });
+
+    // EDIT
+    $('.editBtn').click(function() {
+        let id = $(this).data('id');
+        $.post('<?= base_url('organization-edit') ?>', {id:id}, function(data){
+            $('#editFormData').html(data);
+            new bootstrap.Offcanvas(document.getElementById('editOrganizationCanvas')).show();
         });
     });
 
-    // Open Add Organization
-    $('[data-bs-target="#addOrganizationCanvas"]').on('click', function() {
-        $('#org_id').val('');
-        $('#organizationForm')[0].reset();
+    // UPDATE
+    $('#organizationEditForm').submit(function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let id = form.find('input[name="id"]').val();
+        $.post('<?= base_url('organization-update') ?>/'+id, form.serialize(), function(response){
+            if(response.success){ location.reload(); }
+            else{ alert(response.error || 'Update failed'); }
+        }, 'json');
     });
 });
-
-// Edit record
-function editRecord(url, id) {
-    $.post(url, {id:id}, function(data) {
-        $('#editFormData').html(data);
-        let offcanvas = new bootstrap.Offcanvas(document.getElementById('editOrganizationCanvas'));
-        offcanvas.show();
-    });
-}
 </script>
 
 <?= $this->endSection() ?>
