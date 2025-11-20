@@ -26,10 +26,19 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?= base_url('employee-list') ?>"><i class="sidebar-item-icon fa fa-users"></i>
+                    <a href="<?= base_url('employee-list') ?>"><i class="sidebar-item-icon fa fa-users"></i>
                             <span class="nav-label">Employee List</span>
                         </a>
                     </li>
+
+
+                    <li>
+    <a href="<?= base_url('organization-list') ?>"><i class="sidebar-item-icon fa fa-building"></i>
+        <span class="nav-label">Organization</span>
+    </a>
+</li>
+
+                       
                    
                     <li class="heading">Asset Management</li>
                    
