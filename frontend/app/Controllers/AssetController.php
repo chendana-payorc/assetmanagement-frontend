@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers;
-
+use Illuminate\Support\Facades\Log;
 class AssetController extends BaseController
 {
     public function index()
@@ -17,11 +17,6 @@ class AssetController extends BaseController
     $client = getApiClient();
     $headers = getApiHeaders();
 
-    $model = $this->request->getGet('model');
-    $name  = $this->request->getGet('name');
-    $count = $this->request->getGet('count');
-
-    // Fetch assets from API
     $response = $client->get(getAssetApiUrl('/list'), [
         'headers' => $headers,
     ]);
@@ -29,91 +24,163 @@ class AssetController extends BaseController
     $result = json_decode($response->getBody(), true);
     $assets = $result['data'] ?? [];
 
-    // Apply filtering locally
-    if (!empty($model)) {
-        $assets = array_filter($assets, fn($a) => stripos($a['model'], $model) !== false);
-    }
-    if (!empty($name)) {
-        $assets = array_filter($assets, fn($a) => stripos($a['name'], $name) !== false);
-    }
-    if (!empty($count)) {
-        $assets = array_filter($assets, fn($a) => $a['count'] == $count);
-    }
-
-    return view('frontend/asset/asset-index', compact('assets', 'model', 'name', 'count'));
+    return view('frontend/asset/asset-index', compact('assets'));
 }
 
+public function filterAsset()
+{
+    $client  = getApiClient();
+    $headers = getApiHeaders();
+    $query = http_build_query([
+        'model'       => $this->request->getGet('model'),
+        'name'        => $this->request->getGet('name'),
+        'count'       => $this->request->getGet('count'),
+        'price'       => $this->request->getGet('price'),
+        'category_id' => $this->request->getGet('category_id'),
+        'supplier_id' => $this->request->getGet('supplier_id'),
+    ]);
 
+    try {
+       
+        $response = $client->get(getAssetApiUrl("/list?$query"), [
+            'headers' => $headers,
+        ]);
 
-    public function store()
-    {
-        helper('api');
+        $result = json_decode($response->getBody(), true);
 
-        $client = getApiClient();
-        $headers = getApiHeaders();
+        return $this->response->setJSON($result);
 
-        $name = $this->request->getPost('name');
-        $model = $this->request->getPost('model');
-        $count = $this->request->getPost('count');
-        $description = $this->request->getPost('description');
+    } catch (\Exception $e) {
 
-        try {
-            $client->post(getAssetApiUrl('/create'), [
-                'headers' => $headers,
-                'form_params' => [
-                    'name' => $name,
-                    'model' => $model,
-                    'count' => $count,
-                    'description' => $description,
-                ],
-            ]);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Asset created successfully',
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        return $this->response->setJSON([
+            "success" => false,
+            "data"    => [],
+            "message" => "Unable to fetch assets"
+        ]);
     }
+}
 
-    public function update($id)
-    {
-        helper('api');
+public function getCategory()
+{
+    $client = getApiClient();
+    $headers = getApiHeaders();
 
-        $client = getApiClient();
-        $headers = getApiHeaders();
+    try {
+        $response = $client->get('http://localhost:3000/api/assetcategory/list', [
+            'headers' => $headers
+        ]);
 
-        $name = $this->request->getPost('name');
-        $model = $this->request->getPost('model');
-        $count = $this->request->getPost('count');
-        $description = $this->request->getPost('description');
+        $result = json_decode($response->getBody(), true);
 
-        try {
-            $client->put(getAssetApiUrl('/update/' . $id), [
-                'headers' => $headers,
-                'form_params' => [
-                    'name' => $name,
-                    'model' => $model,
-                    'count' => $count,
-                    'description' => $description,
-                ],
-            ]);
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $result['data'] ?? $result
+        ]);
 
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Asset updated successfully',
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ]);
-        }
+    } catch (\Exception $e) {
+        return $this->response->setStatusCode(500)->setJSON([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
     }
+}
+
+public function getSupplier()
+{
+    $client = getApiClient();
+    $headers = getApiHeaders();
+
+    try {
+        $response = $client->get('http://localhost:3000/api/supplier/list', [
+            'headers' => $headers
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $result['data'] ?? $result
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setStatusCode(500)->setJSON([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function store()
+{
+    helper('api');
+
+    $client  = getApiClient();
+    $headers = getApiHeaders();
+
+    try {
+        $response = $client->post(getAssetApiUrl('/create'), [
+            'headers' => $headers,
+            'form_params' => [
+                'model'             => $this->request->getPost('model'),
+                'name'              => $this->request->getPost('name'),
+                'count'             => $this->request->getPost('count'),
+                'description'       => $this->request->getPost('description'),
+                'price'             => $this->request->getPost('price'),
+                'asset_categoryid'  => $this->request->getPost('category_id'),
+                'asset_supplierid'  => $this->request->getPost('supplier_id'),
+            ]
+        ]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Asset created successfully'
+        ]);
+
+    } catch (\Exception $e) {
+
+        return $this->response->setStatusCode(500)->setJSON([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ]);
+    }
+}
+
+public function update($id)
+{
+    helper('api');
+
+    $client  = getApiClient();
+    $headers = getApiHeaders();
+
+    try {
+
+        $response = $client->put(getAssetApiUrl('/update/' . $id), [
+            'headers' => $headers,
+            'form_params' => [
+                'model'             => $this->request->getPost('model'),
+                'name'              => $this->request->getPost('name'),
+                'count'             => $this->request->getPost('count'),
+                'description'       => $this->request->getPost('description'),
+                'price'             => $this->request->getPost('price'),
+                'asset_categoryid'  => $this->request->getPost('category_id'),
+                'asset_supplierid'  => $this->request->getPost('supplier_id'),
+            ]
+        ]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Asset updated successfully'
+        ]);
+
+    } catch (\Exception $e) {
+
+        return $this->response->setStatusCode(500)->setJSON([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ]);
+    }
+}
+
 
     public function delete($id)
     {
@@ -139,41 +206,79 @@ class AssetController extends BaseController
         }
     }
 
+    private function fetchAssetCategories(): array
+    {
+        $client = getApiClient();
+        $headers = getApiHeaders();
+    
+        try {
+            $response = $client->get(getAssetCategoryApiUrl('/list'), [
+                'headers' => $headers,
+            ]);
+    
+            $result = json_decode($response->getBody(), true);
+            return $result['data'] ?? [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+    
+    private function fetchAssetSuppliers(): array
+    {
+        $client = getApiClient();
+        $headers = getApiHeaders();
+    
+        try {
+            $response = $client->get(getSupplierApiUrl('/list'), [
+                'headers' => $headers,
+            ]);
+    
+            $result = json_decode($response->getBody(), true);
+            return $result['data'] ?? [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+    
     public function editRecord()
     {
-        helper('api');
-
         $encryptedId = $this->request->getPost('id');
+    
         if (!$encryptedId) {
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
-                'error' => 'Asset ID is required',
+                'error' => 'Asset ID is required'
             ]);
         }
-
+    
         $client = getApiClient();
         $headers = getApiHeaders();
-
+    
         try {
             $response = $client->get(getAssetApiUrl('/get/' . $encryptedId), [
-                'headers' => $headers,
+                'headers' => $headers
             ]);
+    
             $result = json_decode($response->getBody(), true);
             $asset = $result['data'] ?? null;
-
+    
             if (!$asset) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
-                    'error' => 'Asset not found',
+                    'error' => 'Asset not found'
                 ]);
             }
-
-            return view('frontend/asset/edit-form', compact('asset'));
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'error' => 'Failed to fetch asset data: ' . $e->getMessage(),
+                'error' => 'Failed to fetch asset data: ' . $e->getMessage()
             ]);
         }
+    
+        $categories = $this->fetchAssetCategories();
+        $suppliers = $this->fetchAssetSuppliers();
+    
+        return view('frontend/asset/edit-form', compact('asset', 'categories', 'suppliers'));
     }
+    
 }

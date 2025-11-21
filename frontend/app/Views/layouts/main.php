@@ -99,7 +99,7 @@
 <script src="<?= base_url('assets/js/scripts/dashboard_1_demo.js') ?>"></script>
 <script src="<?= base_url('assets/vendors/DataTables/datatables.min.js') ?>" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
 <script type="text/javascript">
      
@@ -127,7 +127,7 @@
 
 
 function editRecord(requestUrl, id) {
-    console.log(requestUrl,id);
+   
     $.ajax({
         url: requestUrl,
         method: 'POST',
@@ -140,6 +140,7 @@ function editRecord(requestUrl, id) {
             $('#editFormData').html(response);
 
             var editCanvas = new bootstrap.Offcanvas(document.getElementById('editDepartmentCanvas'));
+            console.log(editCanvas);
             editCanvas.show();
         },
         error: function (xhr) {
@@ -156,15 +157,16 @@ function editRecord(requestUrl, id) {
     });
 }
 
-document.getElementById('addUserCanvas')
-    .addEventListener('shown.bs.offcanvas', function () {
-        initPasswordValidation();
-    });
+const addCanvas = document.getElementById('addUserCanvas');
+if (addCanvas !== null) {
+    addCanvas.addEventListener('shown.bs.offcanvas', initPasswordValidation);
+}
 
-    document.getElementById('editUserCanvas')
-    .addEventListener('shown.bs.offcanvas', function () {
-        initPasswordValidation();
-    });
+const editCanvas = document.getElementById('editUserCanvas');
+if (editCanvas !== null) {
+    editCanvas.addEventListener('shown.bs.offcanvas', initPasswordValidation);
+}
+
 
     
 function initPasswordValidation() {

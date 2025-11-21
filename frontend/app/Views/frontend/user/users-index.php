@@ -15,7 +15,7 @@
     </button>
 </div>
 
-<div class="row mb-4 shadow-sm p-3 bg-light rounded m-3">
+<div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded m-3">
     <h5 class="pb-2 mb-2">Filters</h5>
     <div class="col-md-2">
         <input type="text" id="filterName" class="form-control" placeholder="Search by Name">
@@ -27,13 +27,13 @@
 
     <div class="col-md-2">
         <select id="filterDepartment" class="form-control">
-            <option value="">All Departments</option>
+            <option value="">-- Select Departments --</option>
         </select>
     </div>
 
     <div class="col-md-2">
         <select id="filterDesignation" class="form-control">
-            <option value="">All Designations</option>
+            <option value="">-- Select Designations --</option>
         </select>
     </div>
 
@@ -627,22 +627,39 @@ function edit(url, id) {
     });
 }
 
-
 $(document).ready(function () {
 
-let userTable = $('#example-table').DataTable({
-    pageLength: 10,
-    ordering: false
-});
+let userTable;
 
+initUserTable(); // initialize on load
 loadDepartments();
 loadDesignations();
-loadUsers(); 
+loadUsers();
 
+// ----------------------------------------------------
+// Initialize DataTable (safe destroy+create)
+// ----------------------------------------------------
+function initUserTable() {
+    if ($.fn.DataTable.isDataTable('#example-table')) {
+        $('#example-table').DataTable().clear().destroy();
+    }
+
+    userTable = $('#example-table').DataTable({
+        pageLength: 10,
+        ordering: false
+    });
+}
+
+// ----------------------------------------------------
+// Apply Filter
+// ----------------------------------------------------
 $("#applyFilter").on("click", function () {
     loadUsers();
 });
 
+// ----------------------------------------------------
+// Reset Filter
+// ----------------------------------------------------
 $("#resetFilter").on("click", function () {
     $("#filterName").val('');
     $("#filterEmail").val('');
@@ -651,14 +668,16 @@ $("#resetFilter").on("click", function () {
     loadUsers();
 });
 
-
+// ----------------------------------------------------
+// Load Departments
+// ----------------------------------------------------
 function loadDepartments() {
     $.ajax({
         url: "<?= base_url('departments') ?>",
         method: "GET",
         success: function (res) {
             if (res.success) {
-                let html = '<option value="">All Departments</option>';
+                let html = '<option value="">--Select Department--</option>';
                 res.data.forEach(d => {
                     html += `<option value="${d.id}">${d.name}</option>`;
                 });
@@ -668,13 +687,16 @@ function loadDepartments() {
     });
 }
 
+// ----------------------------------------------------
+// Load Designations
+// ----------------------------------------------------
 function loadDesignations() {
     $.ajax({
         url: "<?= base_url('designations') ?>",
         method: "GET",
         success: function (res) {
             if (res.success) {
-                let html = '<option value="">All Designations</option>';
+                let html = '<option value="">--Select Designation--</option>';
                 res.data.forEach(d => {
                     html += `<option value="${d.id}">${d.name}</option>`;
                 });
@@ -684,6 +706,9 @@ function loadDesignations() {
     });
 }
 
+// ----------------------------------------------------
+// Load & Filter Users
+// ----------------------------------------------------
 function loadUsers() {
     $.ajax({
         url: "<?= base_url('filter-users') ?>",
@@ -696,6 +721,9 @@ function loadUsers() {
         },
         success: function (res) {
 
+            // Reinitialize DataTable before inserting rows
+            initUserTable();
+
             let rows = [];
 
             if (res.success && res.data.length > 0) {
@@ -707,28 +735,27 @@ function loadUsers() {
                         u.department_name,
                         u.designation_name,
                         `
-                        <button class="btn btn-sm btn-primary tooltip-btn" data-bs-toggle="tooltip"
-                                    title="Edit" onclick="edit('<?= base_url('user-edit') ?>', '${u.id}')">
-                            <i class="fa fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-bs-toggle="tooltip"
-                                    title="Delete" data-id="${u.id}">
-                            <i class="fa fa-trash"></i>
-                        </button>
+                            <button class="btn btn-sm btn-primary tooltip-btn"
+                                    title="Edit"
+                                    onclick="edit('<?= base_url('user-edit') ?>', '${u.id}')">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger deleteBtn tooltip-btn"
+                                    title="Delete"
+                                    data-id="${u.id}">
+                                <i class="fa fa-trash"></i>
+                            </button>
                         `
                     ]);
                 });
             }
 
-            userTable.clear();
-            userTable.rows.add(rows);
-            userTable.draw();
+            userTable.rows.add(rows).draw();
         }
     });
 }
 
 });
-
 
 
 </script>
