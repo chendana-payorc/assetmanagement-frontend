@@ -11,7 +11,7 @@
     </button>
 </div>
 
-<div class="row mb-4 shadow-sm p-3 bg-light rounded m-3">
+<div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded m-3">
     <h5 class="pb-2 mb-2">Filters</h5>
     <div class="col-md-4">
        
@@ -21,7 +21,7 @@
     <div class="col-md-4">
        
         <select id="filterStatus" class="form-control">
-            <option value="">All Status</option>
+            <option value="">-- Select Status --</option>
             <option value="1">Active</option>
             <option value="0">Inactive</option>
         </select>

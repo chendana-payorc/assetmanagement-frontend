@@ -1,47 +1,48 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
-
+ 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+ 
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Asset Supplier List</h1>
-    <button class="btn btn-primary my-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#addSupplierCanvas" aria-controls="addSupplierCanvas">
-        Add Supplier +
+    <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addSupplierCanvas" aria-controls="addSupplierCanvas" title="Add">
+    <i class="fa fa-plus mx-2"></i>
+        Add Supplier
     </button>
 </div>
-
+ 
 <div class="page-content fade-in-up">
-
+ 
     <!-- ================= FILTER SECTION ================= -->
     <div class="card mb-4 shadow-sm p-3 bg-light rounded">
         <form method="GET" action="<?= base_url('supplier-list') ?>">
             <div class="row g-3 align-items-end">
-
+ 
             <div class="col-md-3">
     <label class="form-label">Name</label>
     <input type="text" name="name" class="form-control" value="<?= esc($name ?? '') ?>" placeholder="Search Name">
 </div>
-
+ 
 <div class="col-md-3">
     <label class="form-label">Email</label>
     <input type="text" name="email" class="form-control" value="<?= esc($email ?? '') ?>" placeholder="Search Email">
 </div>
-
+ 
 <div class="col-md-3">
     <label class="form-label">Phone</label>
     <input type="text" name="phone" class="form-control" value="<?= esc($phone ?? '') ?>" placeholder="Search Phone">
 </div>
-
+ 
 <div class="col-md-3">
     <label class="form-label">Organization</label>
     <input type="text" name="organization_name" class="form-control" value="<?= esc($organization_name ?? '') ?>" placeholder="Search Organization">
 </div>
-
+ 
 <div class="col-md-3">
                 <label class="form-label">Address</label>
                 <input type="text" name="address" class="form-control" value="<?= esc($address ?? '') ?>" placeholder="Search Address">
             </div>
-
+ 
 <div class="col-md-3">
     <label class="form-label">Status</label>
     <select name="status" class="form-select">
@@ -50,18 +51,21 @@
         <option value="inactive" <?= (isset($status) && $status=='inactive') ? 'selected' : '' ?>>Inactive</option>
     </select>
 </div>
-
-
+ 
+ 
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                    <a href="<?= base_url('supplier-list') ?>" class="btn btn-outline-secondary w-100">Reset</a>
+                    <button type="submit" class="btn btn-primary w-100 font-bold" id="applyFilter"
+        title="Search">
+            <i class="fa fa-search mx-2"></i>Search
+        </button>
+                    <a href="<?= base_url('supplier-list') ?>" class="btn btn-secondary font-bold w-100">Reset</a>
                 </div>
-
+ 
             </div>
         </form>
     </div>
     <!-- =============== END FILTER SECTION ================== -->
-
+ 
     <div class="ibox">
         <div class="ibox-body">
             <table class="table table-striped table-bordered table-hover" id="supplier-table" cellspacing="0" width="100%">
@@ -98,25 +102,25 @@
                                 <td><?= esc($sup['address']) ?></td>
                                 <td><?= esc($sup['status']) == 'active' ? 'Active' : 'Inactive' ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn" data-id="<?= $sup['id'] ?>">
+                                    <button class="btn btn-sm btn-primary editBtn tooltip-btn" title="Edit" data-id="<?= $sup['id'] ?>">
                                         <i class="fa fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $sup['id'] ?>">
+                                    <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" title="Delete" data-id="<?= $sup['id'] ?>">
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="6" class="text-center">No suppliers found.</td></tr>
+                        <tr><td colspan="7" class="text-center">No suppliers found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
-
+ 
 </div>
-
+ 
 <!-- ================= OFFCANVAS CREATE ================= -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addSupplierCanvas" aria-labelledby="addSupplierCanvasLabel">
     <div class="offcanvas-header">
@@ -124,33 +128,33 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form id="supplierForm">
+    <form id="supplierForm">
             <input type="hidden" name="id" id="sup_id">
             <div class="form-group mb-3">
                 <label class="required">Supplier Name <span style="color:red">*</span></label>
                 <input class="form-control" type="text" name="supplier_name" placeholder="Enter Supplier Name" required>
             </div>
-
+ 
             <div class="form-group mb-3">
                 <label class="required">Email <span style="color:red">*</span></label>
                 <input class="form-control" type="email" name="email" placeholder="Enter Email" required>
             </div>
-
+ 
             <div class="form-group mb-3">
                 <label class="required">Phone <span style="color:red">*</span></label>
                 <input class="form-control" type="text" name="phone" placeholder="Enter Phone" required>
             </div>
-
+ 
             <div class="form-group mb-3">
                 <label class="required">Organization Name <span style="color:red">*</span></label>
                 <input class="form-control" type="text" name="organization_name" placeholder="Enter Organization Name" required>
             </div>
-
+ 
             <div class="form-group mb-3">
                 <label class="required">Address <span style="color:red">*</span></label>
                 <textarea name="address" class="form-control" rows="3" placeholder="Enter Address" required></textarea>
             </div>
-
+ 
             <!-- default status hidden to avoid duplicate dropdown on create (backend expects status) -->
             <div class="form-group mb-3">
     <label class="required">Status <span style="color:red">*</span></label>
@@ -159,15 +163,15 @@
         <option value="inactive">Inactive</option>
     </select>
 </div>
-
-
+ 
+ 
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">Submit</button>
+                <button class="btn btn-primary" id="supplierSubmit" type="submit">Submit</button>
             </div>
         </form>
     </div>
 </div>
-
+ 
 <!-- ================= OFFCANVAS EDIT ================= -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="editSupplierCanvas" aria-labelledby="editSupplierCanvasLabel">
     <div class="offcanvas-header">
@@ -181,72 +185,50 @@
         </form>
     </div>
 </div>
-
+ 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(function() {
-    $('#supplier-table').DataTable({
-        pageLength: 10,
-        ordering: false,
-    });
 
-    // CREATE
-    $(document).on('submit', '#supplierForm', function(e) {
+
+$(function () {
+   
+$(document).on('submit', '#supplierForm', function(e) {
         e.preventDefault();
-        const $form = $(this);
+        let form = $(this);
+
         $.ajax({
             url: '<?= base_url('supplier-store') ?>',
-            method: 'POST',
-            data: $form.serialize(),
+            type: 'POST',
+            data: $(this).serialize(),
             success: function(response) {
-                if (response.success || response.status === 'success') {
-                    Swal.fire({icon:'success', title:'Success!', text: response.message || 'Supplier created', showConfirmButton:false, timer:1400})
-                    .then(()=> location.reload());
+                if(response.success){
+                    Swal.fire({
+                        icon:'success',
+                        title:'Saved!',
+                        text: response.message,
+                        showConfirmButton:false,
+                        timer:1200
+                    }).then(()=> location.reload());
                 } else {
-                    Swal.fire({icon:'error', title:'Error!', text: response.message || 'Something went wrong'});
+                    Swal.fire({icon:'error', title:'Error!', text: response.message || 'Save failed'});
                 }
             },
-            error: function(xhr) {
-                Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong'});
+            error: function(xhr){
+                Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.message || 'Something went wrong'});
             }
         });
     });
 
-    // DELETE
-    $(document).on('click', '.deleteBtn', function() {
-        let id = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This supplier will be permanently deleted.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: '<?= base_url('supplier-delete') ?>/' + id,
-                    method: 'DELETE',
-                    success: function(response) {
-                        Swal.fire({icon:'success', title:'Deleted!', text: response.message || 'Deleted', showConfirmButton:false, timer:1200})
-                        .then(()=> location.reload());
-                    },
-                    error: function(xhr) {
-                        Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.error || 'Failed to delete'});
-                    }
-                });
-            }
-        });
-    });
-
-    // OPEN ADD (reset)
-    $('[data-bs-target="#addSupplierCanvas"]').on('click', function() {
-        $('#sup_id').val('');
+    // Reset form when opening offcanvas
+    $('[data-bs-target="#addSupplierCanvas"]').on('click', function () {
         $('#supplierForm')[0].reset();
+        $('#sup_id').val('');
     });
+
 });
 
+
+ 
 // EDIT -- load partial and show offcanvas
 $(document).on('click', '.editBtn', function() {
     let id = $(this).data('id');
@@ -256,7 +238,7 @@ $(document).on('click', '.editBtn', function() {
         offcanvas.show();
     });
 });
-
+ 
 // UPDATE
 $(document).on('submit', '#supplierEditForm', function(e) {
     e.preventDefault();
@@ -273,6 +255,63 @@ $(document).on('submit', '#supplierEditForm', function(e) {
         Swal.fire({icon:'error', title:'Error!', text: xhr.responseJSON?.error || 'Update failed'});
     });
 });
-</script>
 
+$('.deleteBtn').on('click', function() {
+    let id = $(this).data('id');
+ 
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This AssetSupplier will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '<?= base_url('supplier-delete') ?>/' + id,
+                method: 'DELETE',
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: response.message || 'Deleted successfully!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => location.reload());
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: xhr.responseJSON?.error || 'Failed to delete'
+                    });
+                }
+            });
+        }
+    });
+});
+
+function initDataTable() {
+        let table = $('#supplier-table');
+        if (!table.length) return; // exit if table does not exist
+
+        if ($.fn.DataTable.isDataTable(table)) {
+            table.DataTable().destroy();
+        }
+
+        table.DataTable({
+            pageLength: 10,
+            ordering: false,
+            responsive: true,
+        });
+    }
+
+    initDataTable();
+</script>
+ 
 <?= $this->endSection() ?>
+ 
+ 

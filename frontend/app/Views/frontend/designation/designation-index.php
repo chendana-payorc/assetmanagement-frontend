@@ -5,30 +5,27 @@
 
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Designation List</h1>
-    <button class="btn btn-primary my-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#addDepartmentCanvas" aria-controls="addDepartmentCanvas">
-        Add Designation +
+    <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addDepartmentCanvas" aria-controls="addDepartmentCanvas"  title="Add">
+    <i class="fa fa-plus mx-2"></i>
+        Add Designation
     </button>
 </div>
 
 <div class="page-content fade-in-up">
-
-<div class="page-content fade-in-up">
-
-Fiilter
-    <!-- ================= FILTER SECTION ================= -->
-    <div class="card mb-4 shadow-sm p-3 bg-light rounded">
+    <div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded">
+    <h5 class="pb-2 mb-2">Filters</h5>
         <form method="GET" action="<?= base_url('designation-list') ?>">
             <div class="row g-3 align-items-end">
 
                 <div class="col-md-4">
-                    <label class="form-label">Name</label>
+                    
                     <input type="text" name="name" class="form-control"
                            value="<?= esc($name ?? '') ?>"
                            placeholder="Search Name">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">Status</label>
+                  
                     <select name="status" class="form-select">
                         <option value="">-- Select Status --</option>
                         <option value="active" <?= (isset($status) && $status=='active')?'selected':'' ?>>Active</option>
@@ -37,8 +34,10 @@ Fiilter
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                    <a href="<?= base_url('designation-list') ?>" class="btn btn-outline-secondary w-100">Reset</a>
+                    <button type="submit" class="btn btn-primary w-100 font-bold" title="Search">
+            <i class="fa fa-search mx-2"></i>Search
+        </button>
+                    <a href="<?= base_url('designation-list') ?>" class="btn btn-secondary w-100 font-bold">Reset</a>
                 </div>
 
             </div>
