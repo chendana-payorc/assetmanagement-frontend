@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
-class DepartmentController extends Controller
+class DepartmentController extends BaseController
 {
     public function index()
     {
@@ -28,7 +28,10 @@ class DepartmentController extends Controller
         $result = json_decode($response->getBody(), true);
         $departments = $result['data'] ?? [];
         //dd($departments);
-        return view('frontend/department/department-index', compact('departments'));
+        return view('frontend/department/department-index', array_merge(
+            compact('departments'),
+            ['organizations' => $this->organizations]
+        ));
     }
 
     public function store()
@@ -150,7 +153,10 @@ class DepartmentController extends Controller
                 ]);
             }
 
-            return view('frontend/department/edit-form', compact('asset'));
+            return view('frontend/department/edit-form',array_merge(
+                compact('asset'),
+                ['organizations' => $this->organizations]
+            ));
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,

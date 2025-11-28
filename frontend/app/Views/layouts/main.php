@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'Asset Manager') ?></title>
+    <title><?= esc($organizations[0]['name'] ?? 'Asset Manager') ?></title>
+    <link rel="icon" type="image/png" 
+          href="<?= env('Image_url').'uploads/organizations/'.$organizations[0]['favicon'] ?>">
+
 
     <!-- GLOBAL MAINLY STYLES -->
     <link href="<?= base_url('assets/vendors/bootstrap/dist/css/bootstrap.min.css') ?>" rel="stylesheet">

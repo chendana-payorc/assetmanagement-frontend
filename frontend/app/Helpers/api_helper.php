@@ -91,4 +91,10 @@ if (!function_exists('getAssetCategoryApiUrl')) {
 }
 
 
+if (!function_exists('getAssetRequestApiUrl')) {
+    function getAssetRequestApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/assetrequest' . $endpoint;
+    }
+}
 

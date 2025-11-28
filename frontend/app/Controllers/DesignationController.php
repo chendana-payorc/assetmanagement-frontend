@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
-class DesignationController extends Controller
+class DesignationController extends BaseController
 {
     public function index()
 
@@ -43,7 +43,10 @@ class DesignationController extends Controller
         
         }
 
-        return view('frontend/designation/designation-index', compact('designations', 'name', 'status'));
+        return view('frontend/designation/designation-index',array_merge(
+            compact('designations', 'name', 'status'),
+            ['organizations' => $this->organizations]
+        ));
     } catch (\Exception $e) {
         return $this->response->setStatusCode(500)->setBody('Error fetching designations: ' . $e->getMessage());
     }
@@ -167,6 +170,7 @@ class DesignationController extends Controller
 
             return view('frontend/designation/edit-form', [
                 'asset' => $asset,
+                'organizations' => $this->organizations
             ]);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([

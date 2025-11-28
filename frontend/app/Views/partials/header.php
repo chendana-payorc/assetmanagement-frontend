@@ -1,10 +1,17 @@
 <header class="header">
             <div class="page-brand">
                 <a class="link" href="">
-                    <span class="brand">Asset 
-                        <span class="brand-tip">Manager</span>
-                    </span>
-                    
+                <?php if (!empty($organizations[0]['logo'])): ?>
+            <img src="<?= env('Image_url').'uploads/organizations/'.$organizations[0]['logo'] ?>"
+                 alt="Organization Logo"
+                 class="brand-logo"
+                 style="height:40px;">
+        <?php else: ?>
+            <span class="brand">Asset 
+                <span class="brand-tip">Manager</span>
+            </span>
+        <?php endif; ?>
+
                 </a>
             </div>
             <div class="flexbox flex-1">
@@ -13,14 +20,7 @@
                     <li>
                         <a class="nav-link sidebar-toggler js-sidebar-toggler"><i class="ti-menu"></i></a>
                     </li>
-                    <!-- <li>
-                        <form class="navbar-search" action="javascript:;">
-                            <div class="rel">
-                                <span class="search-icon"><i class="ti-search"></i></span>
-                                <input class="form-control" placeholder="Search here...">
-                            </div>
-                        </form>
-                    </li> -->
+                   
                 </ul>
                 <!-- END TOP-LEFT TOOLBAR-->
                 <!-- START TOP-RIGHT TOOLBAR-->

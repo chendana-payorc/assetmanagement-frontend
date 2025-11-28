@@ -4,7 +4,7 @@ namespace App\Controllers;
  
 use CodeIgniter\Controller;
  
-class SupplierController extends Controller
+class SupplierController extends BaseController
 {
     public function index()
     {
@@ -85,6 +85,7 @@ class SupplierController extends Controller
                 'organization_name'=> $organization_name,
                 'address'          => $address,
                 'status'           => $status,
+                'organizations' => $this->organizations
             ]);
  
         } catch (\Exception $e) {
@@ -201,7 +202,8 @@ class SupplierController extends Controller
             $result = json_decode($response->getBody(), true);
  
             return view('frontend/supplier/edit-form', [
-                'supplier' => $result['data']
+                'supplier' => $result['data'],
+                'organizations' => $this->organizations
             ]);
  
         } catch (\Exception $e) {

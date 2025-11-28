@@ -294,22 +294,13 @@ $('.deleteBtn').on('click', function() {
     });
 });
 
-function initDataTable() {
-        let table = $('#supplier-table');
-        if (!table.length) return; // exit if table does not exist
-
-        if ($.fn.DataTable.isDataTable(table)) {
-            table.DataTable().destroy();
-        }
-
-        table.DataTable({
-            pageLength: 10,
-            ordering: false,
-            responsive: true,
+$(function() {
+            $('#supplier-table').DataTable({
+                pageLength: 10,
+                ordering: false,
+            });
         });
-    }
 
-    initDataTable();
 </script>
  
 <?= $this->endSection() ?>

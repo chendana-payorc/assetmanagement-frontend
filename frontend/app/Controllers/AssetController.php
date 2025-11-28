@@ -24,7 +24,11 @@ class AssetController extends BaseController
     $result = json_decode($response->getBody(), true);
     $assets = $result['data'] ?? [];
 
-    return view('frontend/asset/asset-index', compact('assets'));
+    return view('frontend/asset/asset-index', array_merge(
+        compact('assets'),
+        ['organizations' => $this->organizations]
+    ));
+    
 }
 
 public function filterAsset()
@@ -278,7 +282,11 @@ public function update($id)
         $categories = $this->fetchAssetCategories();
         $suppliers = $this->fetchAssetSuppliers();
     
-        return view('frontend/asset/edit-form', compact('asset', 'categories', 'suppliers'));
+        return view('frontend/asset/edit-form', array_merge(
+            compact('asset', 'categories', 'suppliers'),
+            ['organizations' => $this->organizations]
+        ));
+        
     }
     
 }
