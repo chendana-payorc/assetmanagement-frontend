@@ -62,6 +62,11 @@
                             <span class="nav-label">Organization</span>
                         </a>
                     </li>
+                    <li>
+                <a href="<?= base_url('assetassignment-list') ?>"><i class="sidebar-item-icon fa fa-tasks"></i>
+                    <span class="nav-label">Asset Assignment</span>
+                </a>
+            </li>
 
                 </ul>
             </div>

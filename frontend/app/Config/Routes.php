@@ -81,6 +81,27 @@ $routes->post('/supplier-edit', 'SupplierController::editRecord');
 $routes->post('/supplier-update/(:any)', 'SupplierController::update/$1');
 $routes->delete('/supplier-delete/(:any)', 'SupplierController::delete/$1');
 
+// ==================== Asset Assignment ====================
+// FRONTEND asset assignment
+$routes->get('assetassignment-list', 'AssetAssignmentController::index');
+$routes->post('assetassignment-store', 'AssetAssignmentController::store');
+$routes->put('assetassignment-return/(:any)', 'AssetAssignmentController::returnAsset/$1');
+$routes->delete('/assetassignment-delete/(:any)', 'AssetAssignmentController::delete/$1');
+$routes->get('/assetassignment-edit/(:any)', 'AssetAssignmentController::edit/$1');
+$routes->post('/assetassignment-update/(:any)', 'AssetAssignmentController::update/$1');
+
+
+
+// helper JSON endpoints for selects
+$routes->get('asset-list-json', 'AssetAssignmentController::assetListJson');
+$routes->get('employee-list-json', 'AssetAssignmentController::employeeListJson');
+
+
+
+
+
+
+
 
 
 $routes->get('uploads/organizations/(:any)', 'FileController::serve/$1');
