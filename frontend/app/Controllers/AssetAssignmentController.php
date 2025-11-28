@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
-class AssetAssignmentController extends Controller
+class AssetAssignmentController extends BaseController
 {
     public function index()
     {
@@ -66,6 +66,7 @@ class AssetAssignmentController extends Controller
                 'assigned_quantity'=> $assigned_quantity,
                 'assigned_date'    => $assigned_date,
                 'status'           => $status,
+                 'organizations' => $this->organizations
             ]);
 
         } catch (\Exception $e) {
@@ -254,7 +255,8 @@ public function edit($id = null)
         return view('frontend/assetassignment/edit-form', [
             'assignment' => $assignment,
             'assets' => $assets,
-            'employees' => $employees
+            'employees' => $employees,
+            'organizations' => $this->organizations
         ]);
 
     } catch (\Exception $e) {

@@ -114,43 +114,45 @@ class AdminController extends BaseController
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
-    
-            $client = getApiClient();
-            $baseUrl = getApiBaseUrl();
-            $headers = getApiHeaders();
-    
-            $response = $client->get($baseUrl . '/dashboard', [
-                'headers' => $headers,
-            ]);
-    
-            $result = json_decode($response->getBody(), true);
-    
-            if (!$result || $result['success'] === false) {
-                $data = [
-                    'totalAssets' => 0,
-                    'totalEmployees' => 0,
-                    'acceptedRequests' => 0,
-                    'pendingRequests' => 0,
-                    'onHoldRequests' => 0,
-                    'deniedRequests' => 0,
-                    'totalAssign' => 0,
-                    'returnAssets' => 0,
-                ];
-            } else {
-                $data = $result['data'];
-            }
-    
-            return view('frontend/dashboard', array_merge($data, [
-                'organizations' => $this->organizations
-            ]));
 
+        $client = getApiClient();
+        $baseUrl = getApiBaseUrl();
+        $headers = getApiHeaders();
+
+        $response = $client->get($baseUrl . '/dashboard', [
+            'headers' => $headers,
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        if (!$result || $result['success'] === false) {
+            $data = [
+                'totalAssets' => 0,
+                'totalEmployees' => 0,
+                'acceptedRequests' => 0,
+                'pendingRequests' => 0,
+                'onHoldRequests' => 0,
+                'deniedRequests' => 0,
+                'totalAssign' => 0,
+                'returnAssets' => 0,
+                'totalAssignedAssets' => 0,
+                'totalRemainingAssets' => 0,
+                'currentAssignedQty' => 0,
+            ];
+        } else {
+            $data = $result['data'];
+        // calculate inventory metrics from assets table
+        $data['totalAssignedAssets'] = $data['totalAssign']; // or sum of assets.assigned_assets
+        $data['totalRemainingAssets'] = $data['totalAssets'] - $data['totalAssignedAssets'];
+
+        // calculate assignment metrics from asset_assignments table
+        $data['currentAssignedQty'] = $data['totalAssign']; // sum of assigned_quantity where status=assigned
     }
-    
+
+    return view('frontend/dashboard', array_merge($data, [
+        'organizations' => $this->organizations
+    ]));
+}
 
 
-    public function logout()
-    {
-        session()->destroy();
-        return redirect()->to('/login')->with('success', 'Logged out successfully');
-    }
 }

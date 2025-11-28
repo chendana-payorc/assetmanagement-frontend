@@ -64,37 +64,48 @@ class AssetRequestController extends BaseController
     }
 
     public function store()
-    {
-        helper('api');
+{
+    helper('api');
 
-        $client = getApiClient();
-        $headers = getApiHeaders();
+    $client  = getApiClient();
+    $headers = getApiHeaders();
 
-        try {
-            $response = $client->post(getAssetRequestApiUrl('/create'), [
-                'headers' => $headers,
-                'form_params' => [
-                    'employee_id'        => "cXQxV0RpNllHRWZJTENKTlNzU3g1QT09",
-                    'asset_id'           => $this->request->getPost('asset_id'),
-                    'requested_quantity' => $this->request->getPost('requested_quantity'),
-                ],
+    // Log incoming POST data
+    log_message('info', 'Incoming Request Data: ' . json_encode($this->request->getPost()));
+
+    try {
+
+        $response = $client->post(getAssetRequestApiUrl('/create'), [
+            'headers' => $headers,
+            'form_params' => [
+                'employee_id'        => "cXQxV0RpNllHRWZJTENKTlNzU3g1QT09",
+                'asset_id'           => $this->request->getPost('asset_id'),
+                'requested_quantity' => $this->request->getPost('quantity'),
+            ],
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+
+        // Log API response
+        //log_message('info', 'API Response: ' . json_encode($result));
+
+        return $this->response->setJSON($result ?: [
+            'success' => true,
+            'message' => 'Request created successfully',
+        ]);
+
+    } catch (\Exception $e) {
+
+        //log_message('error', 'API Error: ' . $e->getMessage());
+
+        return $this->response->setStatusCode(500)
+            ->setJSON([
+                'success' => false,
+                'error'   => $e->getMessage(),
             ]);
-
-            $result = json_decode($response->getBody(), true);
-
-            return $this->response->setJSON($result ?: [
-                'success' => true,
-                'message' => 'Request created successfully',
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)
-                ->setJSON([
-                    'success' => false,
-                    'error' => $e->getMessage()
-                ]);
-        }
     }
+}
+
 
     public function update($id)
     {

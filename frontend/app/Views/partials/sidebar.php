@@ -50,23 +50,24 @@
                         </a>
                     </li>
                     <li class="heading">Asset Assignment</li>
-                    <li>
-                        <a href="<?= base_url('assetrequest-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
-                            <span class="nav-label">Asset Request list</span>
-                        </a>
-                    </li>
-
-                    <li>
-
-                    <a href="<?= base_url('organization-list') ?>"><i class="sidebar-item-icon fa fa-building"></i>
-                            <span class="nav-label">Organization</span>
-                        </a>
-                    </li>
+                    
                     <li>
                 <a href="<?= base_url('assetassignment-list') ?>"><i class="sidebar-item-icon fa fa-tasks"></i>
                     <span class="nav-label">Asset Assignment</span>
                 </a>
             </li>
+            <li>
+                        <a href="<?= base_url('assetrequest-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
+                            <span class="nav-label">Asset Request</span>
+                        </a>
+                    </li>
+                    <li>
+                    
+                    <a href="<?= base_url('organization-list') ?>"><i class="sidebar-item-icon fa fa-building"></i>
+                            <span class="nav-label">Organization</span>
+                        </a>
+                    </li>
+                    
 
                 </ul>
             </div>
