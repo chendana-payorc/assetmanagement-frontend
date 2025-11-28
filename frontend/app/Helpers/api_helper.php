@@ -90,6 +90,14 @@ if (!function_exists('getAssetCategoryApiUrl')) {
     }
 }
 
+if (!function_exists('getAssetAssignmentApiUrl')) {
+    function getAssetAssignmentApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/asset-assignment' . $endpoint;
+    }
+}
+
+
 
 if (!function_exists('getAssetRequestApiUrl')) {
     function getAssetRequestApiUrl($endpoint = '')
