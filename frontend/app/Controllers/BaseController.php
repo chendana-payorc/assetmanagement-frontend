@@ -9,16 +9,6 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
-/**
- * Class BaseController
- *
- * BaseController provides a convenient place for loading components
- * and performing functions that are needed by all your controllers.
- * Extend this class in any new controllers:
- *     class Home extends BaseController
- *
- * For security be sure to declare any new methods as protected or private.
- */
 abstract class BaseController extends Controller
 {
     /**
@@ -38,10 +28,11 @@ abstract class BaseController extends Controller
     protected $helpers = [];
 
     /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
+     * Store organization data globally for all controllers/views.
+     *
+     * @var array
      */
-    // protected $session;
+    protected $organizations = [];
 
     /**
      * @return void
@@ -51,8 +42,23 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        // Preload any models, libraries, etc, here.
+        // 🔹 Use your API client
+        $client  = getApiClient();
+        $headers = getApiHeaders();
 
-        // E.g.: $this->session = service('session');
+        $apiBaseUrl = 'http://localhost:3000/api/organization';
+
+        try {
+            $apiResponse = $client->get($apiBaseUrl . '/list', [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($apiResponse->getBody(), true);
+            $this->organizations = $result['data'] ?? [];
+        } catch (\Throwable $e) {
+            // Handle API errors gracefully
+            $this->organizations = [];
+            log_message('error', 'Failed to fetch organizations: ' . $e->getMessage());
+        }
     }
 }

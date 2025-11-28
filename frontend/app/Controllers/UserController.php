@@ -3,7 +3,7 @@
 namespace App\Controllers;
 use CodeIgniter\Controller;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     public function index()
     {
@@ -26,7 +26,10 @@ class UserController extends Controller
             $users = [];
         }
 
-        return view('frontend/user/users-index', compact('users'));
+        return view('frontend/user/users-index',array_merge(
+            compact('users'),
+            ['organizations' => $this->organizations]
+        ));
     }
 
 
@@ -286,6 +289,9 @@ class UserController extends Controller
         $departments = $this->fetchDepartmentsList();
         $designations = $this->fetchDesignationsList();
 
-        return view('frontend/user/edit-form', compact('user', 'departments', 'designations'));
+        return view('frontend/user/edit-form',array_merge(
+            compact('user', 'departments', 'designations'),
+            ['organizations' => $this->organizations]
+        ));
     }
 }

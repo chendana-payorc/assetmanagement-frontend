@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
-class AssetCategoryController extends Controller
+class AssetCategoryController extends BaseController
 {
     public function index()
     {
@@ -27,7 +27,11 @@ class AssetCategoryController extends Controller
         
         $result = json_decode($response->getBody(), true);
         $assetcategories = $result['data'] ?? [];
-        return view('frontend/assetcategory/category-index', compact('assetcategories'));
+        return view('frontend/assetcategory/category-index', array_merge(
+            compact('assetcategories'),
+            ['organizations' => $this->organizations]
+        ));
+        
     }
 
     public function store()
@@ -149,7 +153,12 @@ class AssetCategoryController extends Controller
                 ]);
             }
 
-            return view('frontend/assetcategory/edit-form', compact('assetcategory'));
+            return view('frontend/assetcategory/edit-form', array_merge(
+                compact('assetcategory'),
+                ['organizations' => $this->organizations]
+            ));
+            
+            
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,

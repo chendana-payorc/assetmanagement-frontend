@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
-class AdminController extends Controller
+class AdminController extends BaseController
 {
     public function register()
     {
@@ -114,9 +114,39 @@ class AdminController extends Controller
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
+    
+            $client = getApiClient();
+            $baseUrl = getApiBaseUrl();
+            $headers = getApiHeaders();
+    
+            $response = $client->get($baseUrl . '/dashboard', [
+                'headers' => $headers,
+            ]);
+    
+            $result = json_decode($response->getBody(), true);
+    
+            if (!$result || $result['success'] === false) {
+                $data = [
+                    'totalAssets' => 0,
+                    'totalEmployees' => 0,
+                    'acceptedRequests' => 0,
+                    'pendingRequests' => 0,
+                    'onHoldRequests' => 0,
+                    'deniedRequests' => 0,
+                    'totalAssign' => 0,
+                    'returnAssets' => 0,
+                ];
+            } else {
+                $data = $result['data'];
+            }
+    
+            return view('frontend/dashboard', array_merge($data, [
+                'organizations' => $this->organizations
+            ]));
 
-        return view('frontend/dashboard');
     }
+    
+
 
     public function logout()
     {

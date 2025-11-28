@@ -46,6 +46,16 @@ $routes->post('/assetcategory-edit', 'AssetCategoryController::editRecord');
 $routes->post('assetcategory-update/(:any)', 'AssetCategoryController::update/$1');
 $routes->delete('assetcategory-delete/(:any)', 'AssetCategoryController::delete/$1');
 
+
+$routes->get('assetrequest-list', 'AssetRequestController::index');
+$routes->get('asset', 'AssetRequestController::getAsset');
+$routes->get('assetrequest', 'AssetRequestController::fetch'); 
+$routes->post('/request-store', 'AssetRequestController::store');
+$routes->post('/request-edit', 'AssetRequestController::editRecord');
+$routes->post('request-update/(:any)', 'AssetRequestController::update/$1');
+$routes->post('/assetrequest-status', 'AssetRequestController::updateStatus');
+$routes->delete('request-delete/(:any)', 'AssetRequestController::delete/$1');
+
 $routes->get('department-list', 'DepartmentController::index');
 $routes->get('department', 'DepartmentController::fetch'); 
 $routes->post('/department-store', 'DepartmentController::store');
@@ -60,7 +70,7 @@ $routes->post('/designation-update/(:any)', 'DesignationController::update/$1');
 $routes->delete('/designation-delete/(:any)', 'DesignationController::delete/$1');
 
 $routes->get('/organization-list', 'OrganizationController::index');
-$routes->post('/organization-store', 'OrganizationController::store');
+$routes->post('organization/store', 'OrganizationController::store');
 $routes->post('/organization-edit', 'OrganizationController::editRecord');
 $routes->post('/organization-update/(:any)', 'OrganizationController::update/$1');
 $routes->delete('/organization-delete/(:any)', 'OrganizationController::delete/$1');
@@ -71,6 +81,9 @@ $routes->post('/supplier-edit', 'SupplierController::editRecord');
 $routes->post('/supplier-update/(:any)', 'SupplierController::update/$1');
 $routes->delete('/supplier-delete/(:any)', 'SupplierController::delete/$1');
 
+
+
+$routes->get('uploads/organizations/(:any)', 'FileController::serve/$1');
 
 
 
