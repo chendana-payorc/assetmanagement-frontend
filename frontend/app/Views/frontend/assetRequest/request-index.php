@@ -6,12 +6,12 @@
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Asset Request List</h1>
 
-    <!-- <button class="btn btn-primary my-2 font-bold" 
+    <button class="btn btn-primary my-2 font-bold" 
         data-bs-toggle="offcanvas"
         data-bs-target="#addRequestCanvas"
         title="Add Request">
         <i class="fa fa-plus mx-2"></i> Add Request
-    </button> -->
+    </button>
 </div>
 
 
@@ -164,6 +164,7 @@
 
     </div>
   </div>
+</div>
 </div>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addRequestCanvas" aria-labelledby="addRequestCanvasLabel">
