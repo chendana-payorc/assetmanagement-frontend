@@ -57,6 +57,7 @@
                 </a>
             </li>
             <li>
+
                         <a href="<?= base_url('assetrequest-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
                             <span class="nav-label">Asset Request</span>
                         </a>
@@ -68,6 +69,14 @@
                         </a>
                     </li>
                     
+
+    <a href="<?= base_url('assethistory-list') ?>">
+        <i class="sidebar-item-icon fa fa-history"></i>
+        <span class="nav-label">Asset History</span>
+    </a>
+</li>
+
+
 
                 </ul>
             </div>

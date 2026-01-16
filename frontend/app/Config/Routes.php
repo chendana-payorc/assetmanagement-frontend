@@ -96,6 +96,9 @@ $routes->post('/assetassignment-update/(:any)', 'AssetAssignmentController::upda
 $routes->get('asset-list-json', 'AssetAssignmentController::assetListJson');
 $routes->get('employee-list-json', 'AssetAssignmentController::employeeListJson');
 
+//Asset History
+$routes->get('/assethistory-list', 'AssetHistoryController::index');
+
 
 
 

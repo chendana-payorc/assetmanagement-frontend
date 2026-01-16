@@ -106,3 +106,12 @@ if (!function_exists('getAssetRequestApiUrl')) {
     }
 }
 
+
+if (!function_exists('getAssetHistoryApiUrl')) {
+    function getAssetHistoryApiUrl($endpoint = '')
+    {
+        return rtrim(env('API_BASE_URL'), '/') . '/asset-history' . $endpoint;
+    }
+}
+
+
