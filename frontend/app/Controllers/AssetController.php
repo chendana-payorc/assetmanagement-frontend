@@ -5,37 +5,74 @@ use Illuminate\Support\Facades\Log;
 class AssetController extends BaseController
 {
     public function index()
+{
+    $token = session()->get('admin_token');
+    if (!$token) {
+        return redirect()->to('/login')->with('error', 'Please login first');
+    }
 
-    {
-        $token = session()->get('admin_token');
-        if (!$token) {
-            return redirect()->to('/login')->with('error', 'Please login first');
-        }
-        helper('api');
+    helper('api');
 
+    // Get page from URL
+    $page = (int) $this->request->getGet('page');
+    $page = $page > 0 ? $page : 1;
+
+    // Fixed page size
+    $limit = 5;
+    $offset = ($page - 1) * $limit;
 
     $client = getApiClient();
     $headers = getApiHeaders();
 
-    $response = $client->get(getAssetApiUrl('/list'), [
-        'headers' => $headers,
-    ]);
+    // 🔹 Build query string with filters AND pagination
+    $queryParams = [
+        'limit' => $limit,
+        'offset' => $offset,
+        'asset_id' => $this->request->getGet('asset_id'),
+        'model' => $this->request->getGet('model'),
+        'name' => $this->request->getGet('name'),
+        'count' => $this->request->getGet('count'),
+        'price' => $this->request->getGet('price'),
+        'category_id' => $this->request->getGet('category_id'),
+        'supplier_id' => $this->request->getGet('supplier_id'),
+    ];
 
+    // Remove empty parameters
+    $queryParams = array_filter($queryParams, function($value) {
+        return $value !== null && $value !== '';
+    });
+
+    $queryString = http_build_query($queryParams);
+
+    // Get paginated data with filters
+    $response = $client->get(
+        getAssetApiUrl("/list?{$queryString}"),
+        ['headers' => $headers]
+    );
+    
     $result = json_decode($response->getBody(), true);
     $assets = $result['data'] ?? [];
 
+    // Total assets count from backend
+    $totalAssets = $result['totalCount'] ?? 0;
+
+    // Pagination calculations
+    $totalPages = $totalAssets > 0 ? ceil($totalAssets / $limit) : 1;
+    $page = max(1, min($page, $totalPages));
+
     return view('frontend/asset/asset-index', array_merge(
-        compact('assets'),
+        compact('assets', 'page', 'totalPages'),
         ['organizations' => $this->organizations]
     ));
-    
 }
+    
 
 public function filterAsset()
 {
     $client  = getApiClient();
     $headers = getApiHeaders();
     $query = http_build_query([
+        'asset_id'    => $this->request->getGet('asset_id'),
         'model'       => $this->request->getGet('model'),
         'name'        => $this->request->getGet('name'),
         'count'       => $this->request->getGet('count'),
@@ -125,6 +162,7 @@ public function store()
         $response = $client->post(getAssetApiUrl('/create'), [
             'headers' => $headers,
             'form_params' => [
+                'asset_id'          => $this->request->getPost('asset_id'),
                 'model'             => $this->request->getPost('model'),
                 'name'              => $this->request->getPost('name'),
                 'count'             => $this->request->getPost('count'),
@@ -161,6 +199,7 @@ public function update($id)
         $response = $client->put(getAssetApiUrl('/update/' . $id), [
             'headers' => $headers,
             'form_params' => [
+                'asset_id'          => $this->request->getPost('asset_id'),
                 'model'             => $this->request->getPost('model'),
                 'name'              => $this->request->getPost('name'),
                 'count'             => $this->request->getPost('count'),

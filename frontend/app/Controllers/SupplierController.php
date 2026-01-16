@@ -12,85 +12,113 @@ class SupplierController extends BaseController
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
- 
+
+        //  Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        //  Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
         $apiBaseUrl = getSupplierApiUrl();
- 
-        // ====== GET FILTER INPUTS ======
-        $name              = $this->request->getGet('name');
-        $email             = $this->request->getGet('email');
-        $phone             = $this->request->getGet('phone');
+
+        //  Get filter values
+        $name = $this->request->getGet('name');
+        $email = $this->request->getGet('email');
+        $phone = $this->request->getGet('phone');
         $organization_name = $this->request->getGet('organization_name');
-        $address           = $this->request->getGet('address');
-        $status            = $this->request->getGet('status');
- 
+        $address = $this->request->getGet('address');
+        $status = $this->request->getGet('status');
+
+        //  Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'organization_name' => $organization_name,
+            'address' => $address,
+            'status' => $status,
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
+
         try {
-            $response = $client->get($apiBaseUrl . '/list', [
-                'headers' => $headers,
-            ]);
+            //  Get paginated data with filters
+            $response = $client->get(
+                $apiBaseUrl . "/list?{$queryString}",
+                ['headers' => $headers]
+            );
  
             $result = json_decode($response->getBody(), true);
             $suppliers = $result['data'] ?? [];
- 
-            // ====== APPLY FILTERS ======
- 
-            // Filter name
-            if (!empty($name)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    stripos($s['supplier_name'], $name) !== false
-                );
-            }
- 
-            // Filter email
-            if (!empty($email)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    stripos($s['email'], $email) !== false
-                );
-            }
- 
-            // Filter phone
-            if (!empty($phone)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    stripos($s['phone'], $phone) !== false
-                );
-            }
- 
-            // Filter organization
-            if (!empty($organization_name)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    stripos($s['organization_name'], $organization_name) !== false
-                );
-            }
- 
-            // Filter address
-            if (!empty($address)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    stripos($s['address'], $address) !== false
-                );
-            }
- 
-            // Filter status
-            if (!empty($status)) {
-                $suppliers = array_filter($suppliers, fn($s) =>
-                    strtolower($s['status']) === strtolower($status)
-                );
-            }
+
+            //  Total suppliers count from backend
+            $totalSuppliers = $result['totalCount'] ?? 0;
+
+            //  Pagination calculations
+            $totalPages = $totalSuppliers > 0 ? ceil($totalSuppliers / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
  
             return view('frontend/supplier/supplier-index', [
-                'suppliers'        => $suppliers,
-                'name'             => $name,
-                'email'            => $email,
-                'phone'            => $phone,
-                'organization_name'=> $organization_name,
-                'address'          => $address,
-                'status'           => $status,
+                'suppliers' => $suppliers,
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'organization_name' => $organization_name,
+                'address' => $address,
+                'status' => $status,
                 'organizations' => $this->organizations
             ]);
  
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)
                 ->setBody('Error fetching supplier list: ' . $e->getMessage());
+        }
+    }
+
+    //  Add filter method (same as Asset module)
+    public function filterSupplier()
+    {
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $apiBaseUrl = getSupplierApiUrl();
+
+        $query = http_build_query([
+            'name' => $this->request->getGet('name'),
+            'email' => $this->request->getGet('email'),
+            'phone' => $this->request->getGet('phone'),
+            'organization_name' => $this->request->getGet('organization_name'),
+            'address' => $this->request->getGet('address'),
+            'status' => $this->request->getGet('status'),
+        ]);
+
+        try {
+            $response = $client->get($apiBaseUrl . "/list?$query", [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                "success" => false,
+                "data" => [],
+                "message" => "Unable to fetch suppliers"
+            ]);
         }
     }
  

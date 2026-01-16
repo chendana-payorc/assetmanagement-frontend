@@ -11,56 +11,100 @@ class UserController extends BaseController
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
+
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $baseUrl = getApiBaseUrl();
         $headers = getApiHeaders();
 
+        // 🔹 Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $this->request->getGet('name'),
+            'email' => $this->request->getGet('email'),
+            'department_id' => $this->request->getGet('department_id'),
+            'designation_id' => $this->request->getGet('designation_id'),
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
+
         try {
-            $response = $client->get($baseUrl . '/getAllAdmins', [
-                'headers' => $headers,
-            ]);
+            // Get paginated data with filters
+            $response = $client->get(
+                $baseUrl . "/getAllAdmins?{$queryString}",
+                ['headers' => $headers]
+            );
 
             $result = json_decode($response->getBody(), true);
             $users = $result['data'] ?? [];
+
+            // Total users count from backend
+            $totalUsers = $result['totalCount'] ?? 0;
+
+            // Pagination calculations
+            $totalPages = $totalUsers > 0 ? ceil($totalUsers / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
+
+            return view('frontend/user/users-index', array_merge(
+                compact('users', 'page', 'totalPages'),
+                ['organizations' => $this->organizations]
+            ));
         } catch (\Exception $e) {
             $users = [];
+            $page = 1;
+            $totalPages = 1;
+            
+            return view('frontend/user/users-index', array_merge(
+                compact('users', 'page', 'totalPages'),
+                ['organizations' => $this->organizations]
+            ));
         }
-
-        return view('frontend/user/users-index',array_merge(
-            compact('users'),
-            ['organizations' => $this->organizations]
-        ));
     }
 
 
-    public function filterUsers()
-{
-    $client = getApiClient();
-    $baseUrl = getApiBaseUrl();
-    $headers = getApiHeaders();
-
-    $query = http_build_query([
-        'name' => $this->request->getGet('name'),
-        'email' => $this->request->getGet('email'),
-        'department_id' => $this->request->getGet('department_id'),
-        'designation_id' => $this->request->getGet('designation_id')
-    ]);
-
-    try {
-        $response = $client->get($baseUrl . "/getAllAdmins?$query", [
-            'headers' => $headers,
-        ]);
-
-        $result = json_decode($response->getBody(), true);
-        return $this->response->setJSON($result);
-
-    } catch (\Exception $e) {
-        return $this->response->setJSON([
-            'success' => false,
-            'data' => []
-        ]);
-    }
-}
+     // Keep this method for AJAX filtering (optional)
+     public function filterUsers()
+     {
+         $client = getApiClient();
+         $baseUrl = getApiBaseUrl();
+         $headers = getApiHeaders();
+ 
+         $query = http_build_query([
+             'name' => $this->request->getGet('name'),
+             'email' => $this->request->getGet('email'),
+             'department_id' => $this->request->getGet('department_id'),
+             'designation_id' => $this->request->getGet('designation_id')
+         ]);
+ 
+         try {
+             $response = $client->get($baseUrl . "/getAllAdmins?$query", [
+                 'headers' => $headers,
+             ]);
+ 
+             $result = json_decode($response->getBody(), true);
+             return $this->response->setJSON($result);
+ 
+         } catch (\Exception $e) {
+             return $this->response->setJSON([
+                 'success' => false,
+                 'data' => [],
+                 'message' => 'Unable to fetch users'
+             ]);
+         }
+     }
 
 
     public function getDesignations()

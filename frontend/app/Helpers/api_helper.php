@@ -114,4 +114,28 @@ if (!function_exists('getAssetHistoryApiUrl')) {
     }
 }
 
+if (!function_exists('getEmployeeHeaders')) {
+    function getEmployeeHeaders()
+    {
+        helper('session');
+
+        $token = session()->get('employee_token');  // 👈 correct session key
+
+        $headers = [
+            'Accept' => 'application/json',
+            'username' => env('API_USERNAME'),
+            'password' => env('API_PASSWORD'),
+        ];
+
+        if ($token) {
+            $headers['Authorization'] = 'Bearer ' . $token;
+        }
+
+        return $headers;
+    }
+}
+
+
+
+
 

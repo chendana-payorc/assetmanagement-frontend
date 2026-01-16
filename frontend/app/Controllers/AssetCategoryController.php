@@ -14,24 +14,83 @@ class AssetCategoryController extends BaseController
         }
         helper('api');
 
+        // 🔹 Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // 🔹 Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
 
-        $response = $client->get(getAssetCategoryApiUrl('/list'), [
-            'headers' => $headers,
-            'query' => [
-                'name' => $this->request->getGet('name'),
-                'status' => $this->request->getGet('status')
-            ]
-        ]);     
+        $name = $this->request->getGet('name');
+    $status = $this->request->getGet('status');
+
+        // 🔹 Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $this->request->getGet('name'),
+            'status' => $this->request->getGet('status'),
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
+
+        // 🔹 Get paginated data with filters
+        $response = $client->get(
+            getAssetCategoryApiUrl("/list?{$queryString}"),
+            ['headers' => $headers]
+        );
         
         $result = json_decode($response->getBody(), true);
         $assetcategories = $result['data'] ?? [];
+
+        // 🔹 Total categories count from backend
+        $totalCategories = $result['totalCount'] ?? 0;
+
+        // 🔹 Pagination calculations
+        $totalPages = $totalCategories > 0 ? ceil($totalCategories / $limit) : 1;
+        $page = max(1, min($page, $totalPages));
+
         return view('frontend/assetcategory/category-index', array_merge(
-            compact('assetcategories'),
+            compact('assetcategories', 'page', 'totalPages'),
             ['organizations' => $this->organizations]
         ));
-        
+    }
+
+    // 🔹 Add filter method (same as Asset module)
+    public function filterCategory()
+    {
+        $client = getApiClient();
+        $headers = getApiHeaders();
+        $query = http_build_query([
+            'name' => $this->request->getGet('name'),
+            'status' => $this->request->getGet('status'),
+        ]);
+
+        try {
+            $response = $client->get(getAssetCategoryApiUrl("/list?$query"), [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                "success" => false,
+                "data" => [],
+                "message" => "Unable to fetch asset categories"
+            ]);
+        }
     }
 
     public function store()

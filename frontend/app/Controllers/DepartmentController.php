@@ -6,6 +6,7 @@ use CodeIgniter\Controller;
 
 class DepartmentController extends BaseController
 {
+    //  Updated index method with pagination (mirrors Asset module)
     public function index()
     {
         $token = session()->get('admin_token');
@@ -14,24 +15,85 @@ class DepartmentController extends BaseController
         }
         helper('api');
 
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
 
-        $response = $client->get(getDepartmentApiUrl('/list'), [
-            'headers' => $headers,
-            'query' => [
-                'name' => $this->request->getGet('name'),
-                'status' => $this->request->getGet('status')
-            ]
-        ]);     
+        //  Get filter values
+        $name = $this->request->getGet('name');
+        $status = $this->request->getGet('status');
+
+        //  Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $name,
+            'status' => $status,
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
+
+        // Get paginated data with filters
+        $response = $client->get(
+            getDepartmentApiUrl("/list?{$queryString}"),
+            ['headers' => $headers]
+        );
         
         $result = json_decode($response->getBody(), true);
         $departments = $result['data'] ?? [];
-        //dd($departments);
+
+        // Total departments count from backend
+        $totalDepartments = $result['totalCount'] ?? 0;
+
+        // Pagination calculations
+        $totalPages = $totalDepartments > 0 ? ceil($totalDepartments / $limit) : 1;
+        $page = max(1, min($page, $totalPages));
+
         return view('frontend/department/department-index', array_merge(
-            compact('departments'),
+            compact('departments', 'page', 'totalPages', 'name', 'status'),
             ['organizations' => $this->organizations]
         ));
+    }
+
+    //  Add filter method (same as Asset module)
+    public function filterDepartment()
+    {
+        $client = getApiClient();
+        $headers = getApiHeaders();
+
+        $query = http_build_query([
+            'name' => $this->request->getGet('name'),
+            'status' => $this->request->getGet('status'),
+        ]);
+
+        try {
+            $response = $client->get(getDepartmentApiUrl("/list?$query"), [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            return $this->response->setJSON($result);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                "success" => false,
+                "data" => [],
+                "message" => "Unable to fetch departments"
+            ]);
+        }
     }
 
     public function store()

@@ -5,56 +5,55 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-
 <div class="page-heading d-flex justify-content-between">
     <h1 class="page-title">Admin List</h1>
-  
-    <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addUserCanvas" aria-controls="addUserCanvas"
-    title="Add">
-    <i class="fa fa-plus mx-2"></i> Add User
+    <button class="btn btn-primary my-2 font-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#addUserCanvas" aria-controls="addUserCanvas" title="Add">
+        <i class="fa fa-plus mx-2"></i> Add User
     </button>
 </div>
 
-<div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded m-3">
-    <h5 class="pb-2 mb-2">Filters</h5>
-    <div class="col-md-2">
-        <input type="text" id="filterName" class="form-control" placeholder="Search by Name">
-    </div>
-
-    <div class="col-md-2">
-        <input type="text" id="filterEmail" class="form-control" placeholder="Search by Email">
-    </div>
-
-    <div class="col-md-2">
-        <select id="filterDepartment" class="form-control">
-            <option value="">-- Select Departments --</option>
-        </select>
-    </div>
-
-    <div class="col-md-2">
-        <select id="filterDesignation" class="form-control">
-            <option value="">-- Select Designations --</option>
-        </select>
-    </div>
-
-
-
-    <div class="col-md-2">
-        <button id="applyFilter" class="btn btn-primary btn-block font-bold"
-        title="Search"> <i class="fa fa-search mx-2"></i>Filter</button>
-    </div>
-    <div class="col-md-2">
-        <button id="resetFilter" class="btn btn-secondary btn-block font-bold"
-        title="Reset">Reset</button>
-    </div>
-
-    </div>
-
-
 <div class="page-content fade-in-up">
+
+    <!-- ===== FILTERS (mirrors asset-index.php) ===== -->
+    <div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded">
+        <h5 class="pb-2 mb-2">Filters</h5>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <input type="text" name="name" class="form-control"
+                       value="<?= esc($name ?? '') ?>"
+                       placeholder="Search by Name">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" name="email" class="form-control"
+                       value="<?= esc($email ?? '') ?>"
+                       placeholder="Search by Email">
+            </div>
+
+            <div class="col-md-2">
+                <select id="filterDepartment" name="department_id" class="form-control">
+                    <option value="">-- Select Department --</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select id="filterDesignation" name="designation_id" class="form-control">
+                    <option value="">-- Select Designation --</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" id="applyFilter" class="btn btn-primary w-100 font-bold"
+                   title="Search"> <i class="fa fa-search mx-2"></i>Search</button>
+                <a href="<?= base_url('users-list') ?>" class="btn btn-secondary w-100 font-bold">Reset</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
     <div class="ibox">
         <div class="ibox-body">
-            <table class="table table-striped table-bordered table-hover" id="example-table" cellspacing="0" width="100%">
+            <table class="table table-striped table-bordered table-hover" id="users-table" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -79,10 +78,10 @@
                     <?php if (!empty($users)): ?>
                         <?php foreach ($users as $user): ?>
                             <tr>
-                                <td><?= esc($user['name'] ?? $user['Name'] ?? '') ?></td>
+                                <td><?= esc($user['name'] ?? '') ?></td>
                                 <td><?= esc($user['email'] ?? '') ?></td>
                                 <td>
-                                    <?php if (!empty($user['country_code'] ?? null)): ?>
+                                    <?php if (!empty($user['country_code'])): ?>
                                         +<?= esc($user['country_code']) ?>
                                     <?php endif; ?>
                                     <?= esc($user['phone_number'] ?? '') ?>
@@ -90,16 +89,11 @@
                                 <td><?= esc($user['department_name'] ?? '') ?></td>
                                 <td><?= esc($user['designation_name'] ?? '') ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn tooltip-btn" 
-                                    
-                                    title="Edit"
-                                        data-id="<?= esc($user['id'] ?? '') ?>" 
-                                        onclick="edit('<?= base_url('user-edit') ?>', '<?= ($user['id'] ?? '') ?>')">
+                                    <button class="btn btn-sm btn-primary editBtn tooltip-btn"
+                                        onclick="edit('<?= base_url('user-edit') ?>', '<?= $user['id'] ?>')">
                                         <i class="fa fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-id="<?= esc($user['id'] ?? '') ?>"
-                                    
-                                    title="Delete">
+                                    <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-id="<?= esc($user['id']) ?>">
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 </td>
@@ -110,77 +104,86 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <?php
+            // ===== PAGINATION (exactly like asset-index.php) =====
+            $limit = 5;
+            $currentPage = (int) ($_GET['page'] ?? 1);
+            $currentPage = max(1, min($currentPage, $totalPages));
+
+            $lastPage = $totalPages;
+            $currentCount = count($users);
+
+            $startPage = max(1, $currentPage - 1);
+            $endPage   = min($lastPage, $currentPage + 1);
+
+            $start = (($currentPage - 1) * $limit) + 1;
+            $end   = $start + $currentCount - 1;
+            ?>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Showing <?= $start ?>–<?= $end ?>
+                </div>
+
+                <nav>
+                    <ul class="pagination mb-0">
+                        <!-- First -->
+                        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" 
+                               href="<?= $currentPage > 1 ? base_url('users-list?page=1') : '#' ?>">
+                                First
+                            </a>
+                        </li>
+
+                        <!-- Prev -->
+                        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage > 1 ? base_url('users-list?page=' . ($currentPage - 1)) : '#' ?>">
+                                Prev
+                            </a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                            <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
+                                <a class="page-link"
+                                   href="<?= $i === $currentPage ? '#' : base_url('users-list?page=' . $i) ?>">
+                                    <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <!-- Next -->
+                        <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage < $lastPage ? base_url('users-list?page=' . ($currentPage + 1)) : '#' ?>">
+                                Next
+                            </a>
+                        </li>
+
+                        <!-- Last -->
+                        <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage < $lastPage ? base_url('users-list?page=' . $lastPage) : '#' ?>">
+                                Last
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
+
 </div>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="addUserCanvas" aria-labelledby="addUserCanvasLabel">
-  <div class="offcanvas-header">
-    <h5 id="addUserCanvasLabel">Create User</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <form id="createUserForm">
-        <input type="hidden" id="userId">
-       
-            <div class="form-group">
-                <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
-                <input class="form-control" type="text" name="name" id="nameInput" placeholder="Enter Name">
-            </div>
-            <div class="row">
-                <div class="col-sm-6 form-group">
-                    <label>Designation<span style="color:red;font-weight:700;">*</span></label>
-                    <select class="form-select" name="designation_id" id="designationSelect" required>
-                        <option value="">Select Designation</option>
-                    </select>
-                </div>
-                <div class="col-sm-6 form-group">
-                    <label>Department<span style="color:red;font-weight:700;">*</span></label>
-                    <select class="form-select" name="department_id" id="departmentSelect" required>
-                        <option value="">Select Department</option>
-                    </select>
-                </div>
-            </div>
-           <div class="form-group">
-                <label>Email<span style="color:red;font-weight:700;">*</span></label>
-                <input class="form-control" type="email" name="email" id="emailInput" placeholder="Enter Email">
-            </div>
-            <div class="form-group">
-              <label for="phone">Mobile<span style="color:red;font-weight:700;">*</span></label>
-              <input id="phone" type="tel" name="phone_number" class="form-control" placeholder="Enter phone number">
-              <input type="hidden" name="country_code" id="country_code">
-            </div>
-
-            <div class="form-group">
-                <label>Password<span style="color:red;font-weight:700;">*</span></label>
-                <input class="form-control" type="password" name="password" id="passwordInput" placeholder="Enter Password">
-            </div>
-            <small id="passwordRules" class="text-muted">
-                <ul style="padding-left:15px; margin-top:5px;">
-                    <li id="ruleUpper">One uppercase letter (A-Z)</li>
-                    <li id="ruleLower">One lowercase letter (a-z)</li>
-                    <li id="ruleNumber">One number (0-9)</li>
-                    <li id="ruleSpecial">One special character (!@#$%^&*)</li>
-                    <li id="ruleLength">Minimum 8 characters</li>
-                </ul>
-            </small>
-
-            <div class="form-group">
-                <label>Confirm Password <span style="color:red;font-weight:700;">*</span></label>
-                <input class="form-control" type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Confirm Password">
-                <small id="confirmError" class="text-danger font-bold"></small>
-            </div>
-
-
-        <div class="form-group mt-3">
-            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
-        </div>
-    </form>
-  </div>
-</div>
-
-
-<div class="offcanvas offcanvas-end" tabindex="-1" id="editUserCanvas" aria-labelledby="editUserCanvasLabel">
+<!-- Edit Offcanvas -->
+<div class="offcanvas offcanvas-end" 
+     tabindex="-1"
+     id="editUserCanvas"
+     aria-labelledby="editUserCanvasLabel"
+     data-bs-backdrop="true"
+     data-bs-scroll="false">
   <div class="offcanvas-header">
     <h5 id="editUserCanvasLabel">Update User</h5>
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -195,12 +198,99 @@
   </div>
 </div>
 
- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<!-- Add Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="addUserCanvas" aria-labelledby="addUserCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 id="addUserCanvasLabel">Create User</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form id="createUserForm">
+        <input type="hidden" id="userId">
+        <div class="form-group">
+            <label class="required">Name<span style="color:red;font-weight:700;">*</span></label>
+            <input class="form-control" type="text" name="name" id="nameInput" placeholder="Enter Name">
+        </div>
+        <div class="row">
+            <div class="col-sm-6 form-group">
+                <label>Designation<span style="color:red;font-weight:700;">*</span></label>
+                <select class="form-select" name="designation_id" id="designationSelect" required>
+                    <option value="">Select Designation</option>
+                </select>
+            </div>
+            <div class="col-sm-6 form-group">
+                <label>Department<span style="color:red;font-weight:700;">*</span></label>
+                <select class="form-select" name="department_id" id="departmentSelect" required>
+                    <option value="">Select Department</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Email<span style="color:red;font-weight:700;">*</span></label>
+            <input class="form-control" type="email" name="email" id="emailInput" placeholder="Enter Email">
+        </div>
+        <div class="form-group">
+            <label for="phone">Mobile<span style="color:red;font-weight:700;">*</span></label>
+            <input id="phone" type="tel" name="phone_number" class="form-control" placeholder="Enter phone number">
+            <input type="hidden" name="country_code" id="country_code">
+        </div>
+        <div class="form-group">
+            <label>Password<span style="color:red;font-weight:700;">*</span></label>
+            <input class="form-control" type="password" name="password" id="passwordInput" placeholder="Enter Password">
+        </div>
+        <small id="passwordRules" class="text-muted">
+            <ul style="padding-left:15px; margin-top:5px;">
+                <li id="ruleUpper">One uppercase letter (A-Z)</li>
+                <li id="ruleLower">One lowercase letter (a-z)</li>
+                <li id="ruleNumber">One number (0-9)</li>
+                <li id="ruleSpecial">One special character (!@#$%^&*)</li>
+                <li id="ruleLength">Minimum 8 characters</li>
+            </ul>
+        </small>
+        <div class="form-group">
+            <label>Confirm Password <span style="color:red;font-weight:700;">*</span></label>
+            <input class="form-control" type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Confirm Password">
+            <small id="confirmError" class="text-danger font-bold"></small>
+        </div>
+        <div class="form-group mt-3">
+            <button class="btn btn-primary" type="submit" id="submitBtn">Submit</button>
+        </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script>
 
+// ========== EDIT FUNCTION (GLOBAL - mirrors asset-index.php) ==========
+function edit(requestUrl, id) {
+    $.ajax({
+        url: requestUrl,
+        method: "POST",
+        data: { id: id },
+        beforeSend: function () {
+            $("#editFormData").html('<div class="text-center p-3">Loading...</div>');
+        },
+        success: function (response) {
+            $("#editFormData").html(response);
+            let el = document.getElementById("editUserCanvas");
+            let canvas = new bootstrap.Offcanvas(el);
+            canvas.show();
+        },
+        error: function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: xhr.responseJSON?.error || 'Failed to load user'
+            });
+        }
+    });
+}
+
 $(document).ready(function() {
-// Load intl-tel-input dynamically then initialize
+
+// ========== PHONE INPUT SETUP ==========
 const loadIntlTelInput = () => {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -220,16 +310,13 @@ const loadIntlTelInput = () => {
 };
 
 let itiInstance = null;
-let designationOptionsLoaded = false;
-let departmentOptionsLoaded = false;
-let pendingDesignationId = null;
-let pendingDepartmentId = null;
+
 loadIntlTelInput().then(() => {
     const phoneInput = document.querySelector('#phone');
     if (phoneInput) {
         itiInstance = window.intlTelInput(phoneInput, {
             separateDialCode: true,
-            initialCountry: 'in', // set a sensible default; user can change
+            initialCountry: 'in',
             preferredCountries: ['in', 'us', 'gb', 'ae'],
             autoPlaceholder: 'polite',
             utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js'
@@ -239,40 +326,7 @@ loadIntlTelInput().then(() => {
     console.error('Failed to load phone input library');
 });
 
-const storeUrl = '<?= base_url('user-store') ?>';
-const updateUrl = '<?= base_url('user-update') ?>';
-
-const resetFormState = () => {
-    $('#createUserForm')[0].reset();
-    $('#userId').val('');
-    $('#country_code').val('');
-    $('#designationSelect').val('');
-    $('#departmentSelect').val('');
-    $('#submitBtn').text('Submit');
-    $('#addUserCanvasLabel').text('Create User');
-    $('#passwordInput').attr('placeholder', 'Enter Password');
-    if (itiInstance) {
-        itiInstance.setCountry('in');
-        itiInstance.setNumber('');
-    } else {
-        $('#phone').val('');
-    }
-};
-
-const applySelectValue = (selector, value) => {
-    if (!value) {
-        return;
-    }
-    const $select = $(selector);
-    if ($select.find('option[value="' + value + '"]').length) {
-        $select.val(value);
-    } else if (selector === '#designationSelect') {
-        pendingDesignationId = value;
-    } else if (selector === '#departmentSelect') {
-        pendingDepartmentId = value;
-    }
-};
-
+// ========== LOAD DESIGNATIONS & DEPARTMENTS ==========
 $.ajax({
     url: '<?= base_url('/designations') ?>',
     method: 'GET',
@@ -283,15 +337,7 @@ $.ajax({
             $.each(response.data, function(index, item) {
                 $('#designationSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
             });
-            designationOptionsLoaded = true;
-            if (pendingDesignationId) {
-                $('#designationSelect').val(pendingDesignationId);
-                pendingDesignationId = null;
-            }
         }
-    },
-    error: function() {
-        console.error('Failed to load designations');
     }
 });
 
@@ -305,19 +351,11 @@ $.ajax({
             $.each(response.data, function(index, item) {
                 $('#departmentSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
             });
-            departmentOptionsLoaded = true;
-            if (pendingDepartmentId) {
-                $('#departmentSelect').val(pendingDepartmentId);
-                pendingDepartmentId = null;
-            }
         }
-    },
-    error: function() {
-        console.error('Failed to load departments');
     }
 });
 
-// Handle form submission for both add and edit forms
+// ========== FORM SUBMISSION ==========
 $(document).on('submit', '#createUserForm', function(e){
     e.preventDefault();
    
@@ -325,16 +363,14 @@ $(document).on('submit', '#createUserForm', function(e){
     const $phoneInput = $form.find('#phone');
     const $countryCodeInput = $form.find('#country_code');
     
-    // Handle phone input - check if it's in edit form or add form
+    // Handle phone
     try {
         let iti = null;
         const isEditForm = $form.closest('#editUserCanvas').length > 0;
         
         if (isEditForm && window.editFormItiInstance) {
-            // Use the edit form's iti instance
             iti = window.editFormItiInstance;
         } else if (!isEditForm && itiInstance) {
-            // Use the add form's iti instance
             iti = itiInstance;
         }
         
@@ -353,54 +389,13 @@ $(document).on('submit', '#createUserForm', function(e){
                 }
                 $phoneInput.val(digitsOnly);
             }
-        } else {
-            // Fallback: use existing country code if available, or validate phone format
-            const phoneVal = ($phoneInput.val() || '').replace(/\D/g, '');
-            if (phoneVal.length > 10) {
-                // Keep last 10 digits
-                $phoneInput.val(phoneVal.slice(-10));
-            }
         }
     } catch (err) {
         console.warn('Phone normalization failed', err);
     }
 
-    // Client-side validation
-    const nameVal = ($form.find('#nameInput').val() || '').trim();
-    const emailVal = ($form.find('#emailInput').val() || '').trim();
-    const phoneVal = ($phoneInput.val() || '').trim();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (nameVal.length < 3 || nameVal.length > 50) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Validation',
-            text: 'Name must be between 3 and 50 characters.'
-        });
-        return;
-    }
-
-    if (!emailRegex.test(emailVal)) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Validation',
-            text: 'Please enter a valid email address.'
-        });
-        return;
-    }
-
-    if (phoneVal.length !== 10) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Validation',
-            text: 'Phone number must be exactly 10 digits.'
-        });
-        return;
-    }
-
     const userId = $form.find('#userId').val();
-    const requestUrl = userId ? `${updateUrl}/${userId}` : storeUrl;
+    const requestUrl = userId ? '<?= base_url("user-update") ?>/' + userId : '<?= base_url("user-store") ?>';
 
     $.ajax({
         url: requestUrl,
@@ -408,25 +403,19 @@ $(document).on('submit', '#createUserForm', function(e){
         data: $form.serialize(),
         success: function(response){
             if (response.success) {
-                const successMessage = response.message || (userId ? 'User updated successfully!' : 'User added successfully!');
                 Swal.fire({
                     icon: 'success',
                     title: 'Success!',
-                    text: successMessage,
+                    text: response.message || (userId ? 'Updated!' : 'Added!'),
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    // Close the appropriate canvas
-                    const isEditForm = $form.closest('#editUserCanvas').length > 0;
-                    const canvasId = isEditForm ? 'editUserCanvas' : 'addUserCanvas';
-                    const canvasEl = document.getElementById(canvasId);
-                    const offcanvasInstance = bootstrap.Offcanvas.getInstance(canvasEl);
-                    if (offcanvasInstance) {
-                        offcanvasInstance.hide();
-                    } else {
-                        const newInstance = new bootstrap.Offcanvas(canvasEl);
-                        newInstance.hide();
-                    }
+                    const editCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('editUserCanvas'));
+                    const addCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('addUserCanvas'));
+                    
+                    if (editCanvas) editCanvas.hide();
+                    if (addCanvas) addCanvas.hide();
+                    
                     location.reload();
                 });
             } else {
@@ -441,25 +430,23 @@ $(document).on('submit', '#createUserForm', function(e){
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
+                text: xhr.responseJSON?.error || 'Something went wrong!'
             });
         }
     });
 });
 
-$('[data-bs-target="#addUserCanvas"]').on('click', function() {
-    resetFormState();
-});
-
-$('table').on('click', '.deleteBtn', function() {
-    const id = $(this).data('id');
-    if (!id) return;
+// ========== DELETE USER ==========
+$('.deleteBtn').on('click', function() {
+    let id = $(this).data('id');
 
     Swal.fire({
         title: 'Are you sure?',
-        text: 'This action cannot be undone.',
+        text: "This user will be permanently deleted.",
         icon: 'warning',
         showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
         confirmButtonText: 'Yes, delete it!',
         cancelButtonText: 'Cancel'
     }).then((result) => {
@@ -468,29 +455,19 @@ $('table').on('click', '.deleteBtn', function() {
                 url: '<?= base_url('user-delete') ?>/' + id,
                 method: 'DELETE',
                 success: function(response) {
-    
-    if (response && response.success) {
-        Swal.fire({
-            icon: 'success',
-            title: 'Deleted!',
-            text: 'User deleted successfully',
-            showConfirmButton: false,
-            timer: 1200
-        }).then(() => location.reload());
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: response?.message || 'Failed to delete user.'
-        });
-    }
-},
-
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: response.message || 'Deleted successfully!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => location.reload());
+                },
                 error: function(xhr) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: xhr.responseJSON?.error || 'Failed to delete user.'
+                        text: xhr.responseJSON?.error || 'Failed to delete'
                     });
                 }
             });
@@ -498,188 +475,110 @@ $('table').on('click', '.deleteBtn', function() {
     });
 });
 
-$('#addUserCanvas').on('hidden.bs.offcanvas', function() {
-    resetFormState();
+$('[data-bs-target="#addUserCanvas"]').on('click', function() {
+    $('#createUserForm')[0].reset();
+    $('#userId').val('');
 });
 
-
-    window.editFormItiInstance = null;
-    
-    
 });
 
-function edit(url, id) {
-    $.ajax({
-        url: url,
-        method: 'POST',
-        data: { id: id },
-        success: function(response, textStatus, xhr) {
-            // Check if response is JSON (error) - jQuery may have parsed it
-            if (typeof response === 'object' && response !== null && !(response instanceof jQuery)) {
-                console.log(response);
-                if (response.error || response.message || response.success === false) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: response.error || response.message || 'Something went wrong!'
-                    });
-                    return;
-                }
-            }
-           
-            if (typeof response === 'string') {
-                const trimmed = response.trim();
-                if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-                    try {
-                        const errorData = JSON.parse(response);
-                        if (errorData.error || errorData.message || errorData.success === false) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: errorData.error || errorData.message || 'Something went wrong!'
-                            });
-                            return;
-                        }
-                    } catch (e) {
-                        
-                    }
-                }
-            }
-          
-            $('#editFormData').html(response);
-            initPasswordValidation();
-            
-            window.editFormItiInstance = null;
-            
-            // Function to initialize phone input
-    function initPhoneInput() {
-                const phoneInput = document.querySelector('#editFormData #phone');
-                if (!phoneInput) return;
-                
-                if (typeof window.intlTelInput === 'undefined') {
-                   
-                    setTimeout(initPhoneInput, 100);
-                    return;
-                }
-                
-                const countryCode = $('#editFormData #country_code').val() || '';
-                const phoneNumber = $('#editFormData #phone').val() || '';
-              
-                try {
-                    const iti = window.intlTelInput(phoneInput, {
-                        separateDialCode: true,
-                        initialCountry: 'in',
-                        preferredCountries: ['in', 'us', 'gb', 'ae'],
-                        autoPlaceholder: 'polite',
-                        utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js'
-                    });
-                    
-                    window.editFormItiInstance = iti;
-                    
-                    if (countryCode && phoneNumber) {
-                        try {
-                           
-                            if (window.intlTelInputGlobals && window.intlTelInputGlobals.getCountryData) {
-                                const countryData = window.intlTelInputGlobals.getCountryData().find(function(item) {
-                                    return item.dialCode === countryCode;
-                                });
-                                if (countryData) {
-                                    iti.setCountry(countryData.iso2);
-                                }
-                            }
-                            // Then set the number
-                            const dialPrefixedNumber = `+${countryCode}${phoneNumber}`;
-                            iti.setNumber(dialPrefixedNumber);
-                        } catch (err) {
-                            console.warn('Failed to set phone number', err);
-                            // Fallback: just set the value
-                            phoneInput.value = phoneNumber;
-                        }
-                    } else if (phoneNumber) {
-                        phoneInput.value = phoneNumber;
-                    }
-                } catch (err) {
-                    console.warn('Failed to initialize phone input', err);
-                }
-            }
-            
-            setTimeout(initPhoneInput, 100);
-           
-            $('#editUserCanvas #submitBtn').text('Update');
-            $('#editUserCanvasLabel').text('Update User');
-           
-            const canvasEl = document.getElementById('editUserCanvas');
-            const offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
-            offcanvasInstance.show();
-            
-            canvasEl.addEventListener('hidden.bs.offcanvas', function() {
-                window.editFormItiInstance = null;
-            }, { once: true });
-        },
-        error: function(xhr) {
-            console.log(xhr.responseJSON);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: xhr.responseJSON?.error || xhr.responseJSON?.message || 'Something went wrong!'
-            });
-        }
-    });
-}
-
+// ========== PAGINATION & FILTER LOGIC (mirrors asset-index.php exactly) ==========
 $(document).ready(function () {
 
 let userTable;
 
-initUserTable(); // initialize on load
+initDataTable();  
 loadDepartments();
 loadDesignations();
-loadUsers();
 
-// ----------------------------------------------------
-// Initialize DataTable (safe destroy+create)
-// ----------------------------------------------------
-function initUserTable() {
-    if ($.fn.DataTable.isDataTable('#example-table')) {
-        $('#example-table').DataTable().clear().destroy();
+function initDataTable() {
+    if ($.fn.DataTable.isDataTable('#users-table')) {
+        $('#users-table').DataTable().clear().destroy();
     }
 
-    userTable = $('#example-table').DataTable({
-        pageLength: 10,
-        ordering: false
+    userTable = $('#users-table').DataTable({
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false
     });
 }
 
-// ----------------------------------------------------
-// Apply Filter
-// ----------------------------------------------------
+// Get current filter values from URL or form
+function getFilterParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        name: $("input[name=name]").val() || urlParams.get('name') || '',
+        email: $("input[name=email]").val() || urlParams.get('email') || '',
+        department_id: $("#filterDepartment").val() || urlParams.get('department_id') || '',
+        designation_id: $("#filterDesignation").val() || urlParams.get('designation_id') || ''
+    };
+}
+
+// Check if any filters are active
+function hasActiveFilters() {
+    const filters = getFilterParams();
+    return Object.values(filters).some(val => val !== '');
+}
+
+// Update pagination links with filter parameters
+function updatePaginationLinks() {
+    const filters = getFilterParams();
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+    
+    // Build query string
+    let queryString = '';
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+    });
+    
+    // Update all pagination links
+    $('.pagination .page-link').each(function() {
+        const $link = $(this);
+        const href = $link.attr('href');
+        
+        if (href && href !== '#') {
+            const url = new URL(href, window.location.origin);
+            const page = url.searchParams.get('page');
+            
+            if (page) {
+                $link.attr('href', `<?= base_url('users-list') ?>?page=${page}${queryString}`);
+            }
+        }
+    });
+}
+
 $("#applyFilter").on("click", function () {
-    loadUsers();
+    // Reset to page 1 when applying new filters
+    const filters = getFilterParams();
+    let queryString = 'page=1';
+    
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+    });
+    
+    // Redirect with filters in URL
+    window.location.href = `<?= base_url('users-list') ?>?${queryString}`;
 });
 
-// ----------------------------------------------------
-// Reset Filter
-// ----------------------------------------------------
-$("#resetFilter").on("click", function () {
-    $("#filterName").val('');
-    $("#filterEmail").val('');
-    $("#filterDepartment").val('');
-    $("#filterDesignation").val('');
-    loadUsers();
-});
-
-// ----------------------------------------------------
-// Load Departments
-// ----------------------------------------------------
 function loadDepartments() {
     $.ajax({
         url: "<?= base_url('departments') ?>",
         method: "GET",
         success: function (res) {
             if (res.success) {
-                let html = '<option value="">--Select Department--</option>';
+                const urlParams = new URLSearchParams(window.location.search);
+                const selectedDept = urlParams.get('department_id') || '';
+                
+                let html = '<option value="">-- Select Department --</option>';
                 res.data.forEach(d => {
-                    html += `<option value="${d.id}">${d.name}</option>`;
+                    const selected = d.id == selectedDept ? 'selected' : '';
+                    html += `<option value="${d.id}" ${selected}>${d.name}</option>`;
                 });
                 $("#filterDepartment").html(html);
             }
@@ -687,18 +586,19 @@ function loadDepartments() {
     });
 }
 
-// ----------------------------------------------------
-// Load Designations
-// ----------------------------------------------------
 function loadDesignations() {
     $.ajax({
         url: "<?= base_url('designations') ?>",
         method: "GET",
         success: function (res) {
             if (res.success) {
-                let html = '<option value="">--Select Designation--</option>';
+                const urlParams = new URLSearchParams(window.location.search);
+                const selectedDesig = urlParams.get('designation_id') || '';
+                
+                let html = '<option value="">-- Select Designation --</option>';
                 res.data.forEach(d => {
-                    html += `<option value="${d.id}">${d.name}</option>`;
+                    const selected = d.id == selectedDesig ? 'selected' : '';
+                    html += `<option value="${d.id}" ${selected}>${d.name}</option>`;
                 });
                 $("#filterDesignation").html(html);
             }
@@ -706,57 +606,24 @@ function loadDesignations() {
     });
 }
 
-// ----------------------------------------------------
-// Load & Filter Users
-// ----------------------------------------------------
-function loadUsers() {
-    $.ajax({
-        url: "<?= base_url('filter-users') ?>",
-        method: "GET",
-        data: {
-            name: $("#filterName").val(),
-            email: $("#filterEmail").val(),
-            department_id: $("#filterDepartment").val(),
-            designation_id: $("#filterDesignation").val()
-        },
-        success: function (res) {
+// Populate form fields from URL on page load
+function populateFiltersFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    $("input[name=name]").val(urlParams.get('name') || '');
+    $("input[name=email]").val(urlParams.get('email') || '');
+}
 
-            // Reinitialize DataTable before inserting rows
-            initUserTable();
+// Initialize filters from URL
+populateFiltersFromURL();
 
-            let rows = [];
-
-            if (res.success && res.data.length > 0) {
-                res.data.forEach(u => {
-                    rows.push([
-                        u.name,
-                        u.email,
-                        (u.country_code ? '+' + u.country_code : '') + ' ' + u.phone_number,
-                        u.department_name,
-                        u.designation_name,
-                        `
-                            <button class="btn btn-sm btn-primary tooltip-btn"
-                                    title="Edit"
-                                    onclick="edit('<?= base_url('user-edit') ?>', '${u.id}')">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn tooltip-btn"
-                                    title="Delete"
-                                    data-id="${u.id}">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        `
-                    ]);
-                });
-            }
-
-            userTable.rows.add(rows).draw();
-        }
-    });
+// Update pagination links if filters are active
+if (hasActiveFilters()) {
+    updatePaginationLinks();
 }
 
 });
 
-
 </script>
+
 <?= $this->endSection() ?>

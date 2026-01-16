@@ -88,17 +88,18 @@
 
     <!-- Charts -->
     <div class="row mt-4">
+
         <!-- Requests by Status -->
         <div class="col-lg-6">
             <div class="ibox">
                 <div class="ibox-head">
                     <div class="ibox-title">Requests by Status</div>
                 </div>
-                
-                <div style="height:420px; width:520px; margin:auto;">
-  <canvas id="requestsByStatus"></canvas>
-</div>
-               
+                <div class="ibox-body">
+                    <div style="height:420px; width:520px; margin:auto;">
+                        <canvas id="requestsByStatus"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -109,21 +110,41 @@
                     <div class="ibox-title">Asset Assignment Overview</div>
                 </div>
                 <div class="ibox-body">
-                    <canvas id="assetAssignChart"></canvas>
+                    <div style="height:420px; width:520px; margin:auto;">
+                        <canvas id="assetAssignChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Assets Overview & Multi Level Overview -->
+<div class="row mt-4">
+
+    <!-- Assets Overview -->
+    <div class="col-lg-6">
+        <div class="ibox">
+            <div class="ibox-head">
+                <div class="ibox-title">Assets Overview</div>
+            </div>
+            <div class="ibox-body">
+                <div style="height:420px; width:520px; margin:auto;">
+                    <canvas id="allAssetsChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- All Assets Overview -->
-    <div class="row mt-4">
-        <div class="col-lg-6">
-            <div class="ibox">
-                <div class="ibox-head">
-                    <div class="ibox-title">Assets Overview</div>
-                </div>
-                <div class="ibox-body">
-                    <canvas id="allAssetsChart"></canvas>
+    <!-- Overall Asset & Request Distribution -->
+    <div class="col-lg-6">
+        <div class="ibox">
+            <div class="ibox-head">
+                <div class="ibox-title">Overall Asset & Request Distribution</div>
+            </div>
+            <div class="ibox-body">
+                <div style="height:420px; width:520px; margin:auto;">
+                    <canvas id="multiLevelChart"></canvas>
                 </div>
             </div>
         </div>
@@ -131,11 +152,16 @@
 
 </div>
 
+
+
+</div>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Requests by Status
     new Chart(document.getElementById('requestsByStatus'), {
-        type: 'doughnut', 
+        type: 'doughnut',
         data: {
             labels: ['Accepted', 'Pending', 'On Hold', 'Denied'],
             datasets: [{
@@ -150,8 +176,10 @@
             }]
         },
         options: {
-            cutout: '60%',   // inner radius, smaller = thicker ring
-        radius: '80%',   // outer radius
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            radius: '80%',
             plugins: {
                 title: {
                     display: true,
@@ -161,8 +189,7 @@
         }
     });
 
-
-    // All Assets Chart with details
+    // Assets Overview
     const assets = <?= json_encode($assets) ?>;
     new Chart(document.getElementById('allAssetsChart'), {
         type: 'bar',
@@ -175,6 +202,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 tooltip: {
                     callbacks: {
@@ -198,7 +227,7 @@
         }
     });
 
-    // Asset Assignment Overview Chart
+    // Asset Assignment Overview
     new Chart(document.getElementById('assetAssignChart'), {
         type: 'bar',
         data: {
@@ -214,6 +243,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
@@ -222,5 +253,115 @@
             }
         }
     });
+
+    // Multi-level (Nested Doughnut) Chart
+new Chart(document.getElementById('multiLevelChart'), {
+    type: 'doughnut',
+    data: {
+        labels: [
+            'Accepted', 'Pending', 'On Hold', 'Denied',
+            'Total Assigned', 'Returned', 'Currently Assigned'
+        ],
+        datasets: [
+
+            // INNER RING → Requests by Status
+            {
+                label: 'Requests',
+                data: [
+                    <?= $acceptedRequests ?>,
+                    <?= $pendingRequests ?>,
+                    <?= $onHoldRequests ?>,
+                    <?= $deniedRequests ?>
+                ],
+                backgroundColor: [
+                    '#28a745',
+                    '#17a2b8',
+                    '#ffc107',
+                    '#dc3545'
+                ],
+                radius: '50%',
+                cutout: '30%'
+            },
+
+            // OUTER RING → Asset Assignment
+            {
+                label: 'Assets',
+                data: [
+                    <?= $totalAssign ?>,
+                    <?= $returnAssets ?>,
+                    <?= $currentAssignedQty ?>
+                ],
+                backgroundColor: [
+                    '#17a2b8',
+                    '#6c757d',
+                    '#28a745'
+                ],
+                radius: '80%',
+                cutout: '55%'
+            }
+        ]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        title: {
+            display: true,
+            text: 'Overall Asset & Request Distribution'
+        },
+        legend: {
+    labels: {
+        generateLabels: function(chart) {
+            const datasets = chart.data.datasets;
+            const labels = [
+                'Accepted', 'Pending', 'On Hold', 'Denied',
+                'Total Assigned', 'Returned', 'Currently Assigned'
+            ];
+
+            let labelIndex = 0;
+            const legendItems = [];
+
+            datasets.forEach((dataset, datasetIndex) => {
+                dataset.data.forEach((value, i) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    const hidden = meta.data[i].hidden === true;
+
+                    legendItems.push({
+                        text: labels[labelIndex],
+                        fillStyle: dataset.backgroundColor[i],
+                        strokeStyle: dataset.backgroundColor[i],
+                        hidden: hidden,
+                        datasetIndex: datasetIndex,
+                        index: i
+                    });
+
+                    labelIndex++;
+                });
+            });
+
+            return legendItems;
+        }
+    },
+
+    onClick: function(e, legendItem, legend) {
+        const chart = legend.chart;
+        const meta = chart.getDatasetMeta(legendItem.datasetIndex);
+
+        // Toggle visibility of the specific arc
+        meta.data[legendItem.index].hidden =
+            !meta.data[legendItem.index].hidden;
+
+        chart.update();
+    }
+}
+
+    }
+}
+
+});
+
+
+
 </script>
+
 <?= $this->endSection() ?>

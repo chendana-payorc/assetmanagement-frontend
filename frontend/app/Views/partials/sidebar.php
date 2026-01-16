@@ -35,7 +35,7 @@
                    
                     <li>
                         <a href="<?= base_url('asset-list') ?>"><i class="sidebar-item-icon fa fa-calendar"></i>
-                            <span class="nav-label">Asset Details</span>
+                            <span class="nav-label">Asset List</span>
                         </a>
                     </li>
 
@@ -69,7 +69,7 @@
                         </a>
                     </li>
                     
-
+                    <li>
     <a href="<?= base_url('assethistory-list') ?>">
         <i class="sidebar-item-icon fa fa-history"></i>
         <span class="nav-label">Asset History</span>

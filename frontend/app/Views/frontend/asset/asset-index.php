@@ -16,6 +16,11 @@
     <div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded">
       <h5 class="pb-2 mb-2">Filters</h5>
         <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+    <input type="text" name="asset_id" class="form-control"
+           value="<?= esc($asset_id ?? '') ?>"
+           placeholder="Search Asset ID">
+</div>
 
                 <div class="col-md-3">
                    
@@ -69,10 +74,13 @@
         <div class="ibox-body">
             <table class="table table-striped table-bordered table-hover" id="asset-table" cellspacing="0" width="100%">
                 <thead>
-                <tr>
+                <tr>    
+                        <th>Asset ID</th>
                         <th>Model</th>
                         <th>Name</th>
                         <th>Count</th>
+                        <th>Assigned Assets</th>
+                        <th>Remaining Assets</th>
                         <th>Price</th>
                         <th>Asset Category</th>
                         <th>Asset Supplier</th>
@@ -81,9 +89,12 @@
                 </thead>
                 <tfoot>
                     <tr>
+                        <th>Asset ID</th>
                         <th>Model</th>
                         <th>Name</th>
                         <th>Count</th>
+                        <th>Assigned Assets</th>
+                        <th>Remaining Assets</th>
                         <th>Price</th>
                         <th>Asset Category</th>
                         <th>Asset Supplier</th>
@@ -94,9 +105,12 @@
                     <?php if (!empty($assets)): ?>
                         <?php foreach ($assets as $dept): ?>
                             <tr>
+                                <td><?= esc($dept['asset_id']) ?></td>
                                 <td><?= esc($dept['model']) ?></td>
                                 <td><?= esc($dept['name']) ?></td>
                                 <td><?= esc($dept['count']) ?></td>
+                                <td><?= esc($dept['assigned_assets']) ?></td>
+                                <td><?= esc($dept['remaining_assets']) ?></td>
                                 <td><?= esc($dept['price']) ?></td>
                                 <td><?= esc($dept['category_name']) ?></td>
                                 <td><?= esc($dept['supplier_name']) ?></td>
@@ -116,6 +130,92 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+            <?php
+$limit = 5;
+
+$currentPage = (int) ($_GET['page'] ?? 1);
+$currentPage = $currentPage > 0 ? $currentPage : 1;
+
+$limit = 5;
+
+$currentPage = (int) ($_GET['page'] ?? 1);
+$currentPage = max(1, min($currentPage, $totalPages));
+
+$lastPage = $totalPages; //  REAL last page from backend
+
+$currentCount = count($assets);
+
+// Range for page numbers
+$startPage = max(1, $currentPage - 1);
+$endPage   = min($lastPage, $currentPage + 1);
+
+// Showing text
+$start = (($currentPage - 1) * $limit) + 1;
+$end   = $start + $currentCount - 1;
+?>
+
+
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+
+    <!-- Showing text -->
+    <div class="text-muted">
+        Showing <?= $start ?>–<?= $end ?>
+    </div>
+
+    <nav>
+        <ul class="pagination mb-0">
+
+            <!-- First -->
+            <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                <a class="page-link" 
+                   href="<?= $currentPage > 1 ? base_url('asset-list?page=1') : '#' ?>">
+                    First
+                </a>
+            </li>
+
+            <!-- Prev -->
+            <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                <a class="page-link"
+                   href="<?= $currentPage > 1 ? base_url('asset-list?page=' . ($currentPage - 1)) : '#' ?>">
+                    Prev
+                </a>
+            </li>
+
+            <!-- Page numbers -->
+            <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
+                    <a class="page-link"
+                       href="<?= $i === $currentPage ? '#' : base_url('asset-list?page=' . $i) ?>">
+                        <?= $i ?>
+                    </a>
+                </li>
+            <?php endfor; ?>
+
+            <!-- Next -->
+            <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                <a class="page-link"
+                   href="<?= $currentPage < $lastPage ? base_url('asset-list?page=' . ($currentPage + 1)) : '#' ?>">
+                    Next
+                </a>
+            </li>
+
+            <!-- Last -->
+            <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                <a class="page-link"
+                   href="<?= $currentPage < $lastPage ? base_url('asset-list?page=' . $lastPage) : '#' ?>">
+                    Last
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+
+
+
+
+
         </div>
     </div>
 </div>
@@ -150,6 +250,11 @@
     <form id="departmentForm">
         <input type="hidden" name="id" id="dept_id">
         <div class="form-group mb-3">
+        <label class="required">Asset ID <span style="color:red;font-weight:700;">*</span></label>
+        <input class="form-control" type="text" name="asset_id" id="dept_assetid"
+               placeholder="Enter Asset ID" required>
+    </div>
+        <div class="form-group mb-3">
             <label class="required">Model<span style="color:red;font-weight:700;">*</span></label>
             <input class="form-control" type="text" name="model" id="dept_model" placeholder="Enter Model" required>
         </div>
@@ -164,7 +269,15 @@
         </div>
         <div class="col-sm-6 form-group">
             <label class="required">Price<span style="color:red;font-weight:700;">*</span></label>
-            <input class="form-control" type="number" name="price" id="dept_count" placeholder="Enter Price" required>
+            <input class="form-control"
+       type="number"
+       name="price"
+       id="dept_price"
+       placeholder="Enter Price"
+       step="0.01"
+       min="0"
+       required>
+
         </div>
         </div>
         <div class="row">
@@ -348,6 +461,8 @@ $('.deleteBtn').on('click', function() {
 });
 
  
+// Replace the existing JavaScript in asset-index.php with this:
+
 $(document).ready(function () {
 
 let assetTable;
@@ -362,24 +477,90 @@ function initDataTable() {
     }
 
     assetTable = $('#asset-table').DataTable({
-        pageLength: 10,
-        ordering: false
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false
+    });
+}
+
+// Get current filter values from URL or form
+function getFilterParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        asset_id: $("input[name=asset_id]").val() || urlParams.get('asset_id') || '',
+        model: $("input[name=model]").val() || urlParams.get('model') || '',
+        name: $("input[name=name]").val() || urlParams.get('name') || '',
+        count: $("input[name=count]").val() || urlParams.get('count') || '',
+        price: $("input[name=price]").val() || urlParams.get('price') || '',
+        category_id: $("#selectCategory").val() || urlParams.get('category_id') || '',
+        supplier_id: $("#selectSupplier").val() || urlParams.get('supplier_id') || ''
+    };
+}
+
+// Check if any filters are active
+function hasActiveFilters() {
+    const filters = getFilterParams();
+    return Object.values(filters).some(val => val !== '');
+}
+
+// Update pagination links with filter parameters
+function updatePaginationLinks() {
+    const filters = getFilterParams();
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+    
+    // Build query string
+    let queryString = '';
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+    });
+    
+    // Update all pagination links
+    $('.pagination .page-link').each(function() {
+        const $link = $(this);
+        const href = $link.attr('href');
+        
+        if (href && href !== '#') {
+            const url = new URL(href, window.location.origin);
+            const page = url.searchParams.get('page');
+            
+            if (page) {
+                $link.attr('href', `<?= base_url('asset-list') ?>?page=${page}${queryString}`);
+            }
+        }
     });
 }
 
 $("#applyFilter").on("click", function () {
-    loadAssets();
+    // Reset to page 1 when applying new filters
+    const filters = getFilterParams();
+    let queryString = 'page=1';
+    
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+    });
+    
+    // Redirect with filters in URL
+    window.location.href = `<?= base_url('asset-list') ?>?${queryString}`;
 });
 
 $("#resetFilter").on("click", function () {
+    // Clear form inputs
+    $("input[name=asset_id]").val('');
     $("input[name=model]").val('');
     $("input[name=name]").val('');
     $("input[name=count]").val('');
     $("input[name=price]").val('');
     $("#selectCategory").val('');
     $("#selectSupplier").val('');
-
-    loadAssets();
+    
+    // Redirect to page 1 without filters
+    window.location.href = '<?= base_url('asset-list') ?>?page=1';
 });
 
 function loadCategories() {
@@ -388,9 +569,13 @@ function loadCategories() {
         method: "GET",
         success: function (res) {
             if (res.success) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const selectedCategory = urlParams.get('category_id') || '';
+                
                 let html = '<option value="">-- Select Asset Category --</option>';
                 res.data.forEach(c => {
-                    html += `<option value="${c.id}">${c.name}</option>`;
+                    const selected = c.id == selectedCategory ? 'selected' : '';
+                    html += `<option value="${c.id}" ${selected}>${c.name}</option>`;
                 });
                 $("#selectCategory").html(html);
             }
@@ -404,9 +589,13 @@ function loadSuppliers() {
         method: "GET",
         success: function (res) {
             if (res.success) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const selectedSupplier = urlParams.get('supplier_id') || '';
+                
                 let html = '<option value="">-- Select Asset Supplier --</option>';
                 res.data.forEach(s => {
-                    html += `<option value="${s.id}">${s.supplier_name}</option>`;
+                    const selected = s.id == selectedSupplier ? 'selected' : '';
+                    html += `<option value="${s.id}" ${selected}>${s.supplier_name}</option>`;
                 });
                 $("#selectSupplier").html(html);
             }
@@ -414,48 +603,23 @@ function loadSuppliers() {
     });
 }
 
-function loadAssets() {
-    $.ajax({
-        url: "<?= base_url('filter-assets') ?>",
-        method: "GET",
-        data: {
-            model: $("input[name=model]").val(),
-            name: $("input[name=name]").val(),
-            count: $("input[name=count]").val(),
-            price: $("input[name=price]").val(),
-            category_id: $("#selectCategory").val(),
-            supplier_id: $("#selectSupplier").val(),
-        },
-        success: function (res) {
-          
-            initDataTable();
+// Populate form fields from URL on page load
+function populateFiltersFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    $("input[name=asset_id]").val(urlParams.get('asset_id') || '');
+    $("input[name=model]").val(urlParams.get('model') || '');
+    $("input[name=name]").val(urlParams.get('name') || '');
+    $("input[name=count]").val(urlParams.get('count') || '');
+    $("input[name=price]").val(urlParams.get('price') || '');
+}
 
-            let rows = [];
+// Initialize filters from URL
+populateFiltersFromURL();
 
-            if (res.success && res.data.length > 0) {
-                res.data.forEach(a => {
-                    rows.push([
-                        a.name,
-                        a.model,
-                        a.count,
-                        a.price,
-                        a.category_name,
-                        a.supplier_name,
-                        `
-                            <button class="btn btn-sm btn-primary tooltip-btn" onclick="edit('<?= base_url('asset-edit') ?>', '${a.id}')" title="Edit">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn tooltip-btn" data-id="${a.id}">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        `
-                    ]);
-                });
-            }
-
-            assetTable.rows.add(rows).draw();
-        }
-    });
+// Update pagination links if filters are active
+if (hasActiveFilters()) {
+    updatePaginationLinks();
 }
 
 });

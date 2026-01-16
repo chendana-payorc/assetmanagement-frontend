@@ -11,24 +11,60 @@ class EmployeeController extends BaseController
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
+
+        helper('api');
+
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $baseUrl = getEmployeeApiUrl();
         $headers = getApiHeaders();
 
+        // Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $this->request->getGet('name'),
+            'email' => $this->request->getGet('email'),
+            'department_id' => $this->request->getGet('department_id'),
+            'designation_id' => $this->request->getGet('designation_id'),
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
+
         try {
-            $response = $client->get($baseUrl . '/list', [
+            $response = $client->get($baseUrl . '/list?' . $queryString, [
                 'headers' => $headers,
             ]);
 
             $result = json_decode($response->getBody(), true);
             $employees = $result['data'] ?? [];
+
+            // Total employees count from backend
+            $totalEmployees = $result['totalCount'] ?? 0;
+
+            // Pagination calculations
+            $totalPages = $totalEmployees > 0 ? ceil($totalEmployees / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
            
         } catch (\Exception $e) {
-            $users = [];
+            $employees = [];
+            $totalPages = 1;
         }
 
-        return view('frontend/employee/employee-index',array_merge(
-            compact('employees'),
+        return view('frontend/employee/employee-index', array_merge(
+            compact('employees', 'page', 'totalPages'),
             ['organizations' => $this->organizations]
         ));
     }

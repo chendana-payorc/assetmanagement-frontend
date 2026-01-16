@@ -2,6 +2,12 @@
 <!-- 
 <?php print_r($asset) ?>
  -->
+<!-- Asset ID (Editable) -->
+<div class="form-group mb-3">
+    <label class="required">Asset ID <span style="color:red;font-weight:700;">*</span></label>
+    <input class="form-control" type="text" name="asset_id" id="asset_id"
+        value="<?= esc($asset['asset_id'] ?? '') ?>" placeholder="Enter Asset ID" required>
+</div>
 <div class="form-group mb-3">
     <label class="required">Model<span style="color:red;font-weight:700;">*</span></label>
     <input class="form-control" type="text" name="model" id="dept_model"
@@ -21,7 +27,15 @@
 </div>
 <div class="col-sm-6 form-group">
             <label class="required">Price<span style="color:red;font-weight:700;">*</span></label>
-            <input class="form-control" type="number" name="price" id="dept_price" placeholder="Enter Price" required  value="<?= esc($asset['price'] ?? '') ?>">
+            <input class="form-control"
+       type="number"
+       name="price"
+       id="dept_price"
+       step="0.01"
+       min="0"
+       required
+       value="<?= esc($asset['price'] ?? '') ?>">
+
         </div>
         </div>
         <div class="row">

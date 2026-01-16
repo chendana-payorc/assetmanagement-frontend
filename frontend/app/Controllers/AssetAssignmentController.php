@@ -13,61 +13,69 @@ class AssetAssignmentController extends BaseController
             return redirect()->to('/login')->with('error', 'Please login first');
         }
 
+        helper('api');
+
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
         $apiBaseUrl = getAssetAssignmentApiUrl();
 
-        // filter inputs
-        $asset_name = $this->request->getGet('asset_name');
-        $model = $this->request->getGet('model');
-        $employee_name = $this->request->getGet('employee_name');
-        $assigned_quantity = $this->request->getGet('assigned_quantity');
-        $assigned_date = $this->request->getGet('assigned_date');
-        $status = $this->request->getGet('status');
+        // Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'asset_name' => $this->request->getGet('asset_name'),
+            'model' => $this->request->getGet('model'),
+            'employee_name' => $this->request->getGet('employee_name'),
+            'assigned_quantity' => $this->request->getGet('assigned_quantity'),
+            'assigned_date' => $this->request->getGet('assigned_date'),
+            'status' => $this->request->getGet('status'),
+        ];
+
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $queryString = http_build_query($queryParams);
 
         try {
-            $response = $client->get($apiBaseUrl . '/list', [
+            // Get paginated data with filters
+            $response = $client->get($apiBaseUrl . '/list?' . $queryString, [
                 'headers' => $headers,
             ]);
             
             $result = json_decode($response->getBody(), true);
             $assignments = $result['data'] ?? [];
 
-            // Apply filters (server returns all; we filter the array similar to supplier controller)
-            if (!empty($asset_name)) {
-                $assignments = array_filter($assignments, fn($a) => stripos($a['asset_name'], $asset_name) !== false);
+            // Format dates
+            foreach ($assignments as &$a) {
+                if (!empty($a['assigned_date'])) {
+                    $a['assigned_date'] = date('d-m-Y H:i:s', strtotime($a['assigned_date']));
+                }
+                if (!empty($a['return_date'])) {
+                    $a['return_date'] = date('d-m-Y H:i:s', strtotime($a['return_date']));
+                }
             }
 
-            if (!empty($model)) {
-                $assignments = array_filter($assignments, fn($a) => stripos($a['model'], $model) !== false);
-            }
+            // Total assignments count from backend
+            $totalAssignments = $result['totalCount'] ?? 0;
 
-            if (!empty($employee_name)) {
-                $assignments = array_filter($assignments, fn($a) => stripos($a['employee_name'], $employee_name) !== false);
-            }
+            // Pagination calculations
+            $totalPages = $totalAssignments > 0 ? ceil($totalAssignments / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
 
-            if (!empty($assigned_quantity)) {
-                $assignments = array_filter($assignments, fn($a) => (string)$a['assigned_quantity'] === (string)$assigned_quantity);
-            }
-
-            if (!empty($assigned_date)) {
-                $assignments = array_filter($assignments, fn($a) => strpos($a['assigned_date'], $assigned_date) !== false);
-            }
-
-            if (!empty($status)) {
-                $assignments = array_filter($assignments, fn($a) => strtolower($a['status']) === strtolower($status));
-            }
-
-            return view('frontend/assetassignment/assetassignment-index', [
-                'assignments'      => $assignments,
-                'asset_name'       => $asset_name,
-                'model'            => $model,
-                'employee_name'    => $employee_name,
-                'assigned_quantity'=> $assigned_quantity,
-                'assigned_date'    => $assigned_date,
-                'status'           => $status,
-                 'organizations' => $this->organizations
-            ]);
+            return view('frontend/assetassignment/assetassignment-index', array_merge(
+                compact('assignments', 'page', 'totalPages'),
+                ['organizations' => $this->organizations]
+            ));
 
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)

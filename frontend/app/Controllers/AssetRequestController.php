@@ -15,26 +15,58 @@ class AssetRequestController extends BaseController
 
         helper('api');
 
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
 
-        $response = $client->get(getAssetRequestApiUrl('/list'), [
-            'headers' => $headers,
-            'query' => [
-                'employee_name' => $this->request->getGet('employee_name'),
-                'asset_name' => $this->request->getGet('asset_name'),
-                'status' => $this->request->getGet('status')
-            ]
-        ]);
+        // Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'employee_name' => $this->request->getGet('employee_name'),
+            'asset_name' => $this->request->getGet('asset_name'),
+            'status' => $this->request->getGet('status'),
+        ];
 
-        $result = json_decode($response->getBody(), true);
-        $requests = $result['data'] ?? [];
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
+        });
 
-        return view('frontend/assetRequest/request-index', array_merge(
-            compact('requests'),
-            ['organizations' => $this->organizations]
-        ));
-        
+        $queryString = http_build_query($queryParams);
+
+        try {
+            // Get paginated data with filters
+            $response = $client->get(getAssetRequestApiUrl('/list?' . $queryString), [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+            $requests = $result['data'] ?? [];
+
+            // Total requests count from backend
+            $totalRequests = $result['totalCount'] ?? 0;
+
+            // Pagination calculations
+            $totalPages = $totalRequests > 0 ? ceil($totalRequests / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
+
+            return view('frontend/assetRequest/request-index', array_merge(
+                compact('requests', 'page', 'totalPages'),
+                ['organizations' => $this->organizations]
+            ));
+
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)
+                ->setBody('Error fetching requests: ' . $e->getMessage());
+        }
     }
 
     
@@ -78,7 +110,7 @@ class AssetRequestController extends BaseController
         $response = $client->post(getAssetRequestApiUrl('/create'), [
             'headers' => $headers,
             'form_params' => [
-                'employee_id'        => "cXQxV0RpNllHRWZJTENKTlNzU3g1QT09",
+                'employee_id'        => "aUV2NThKSnBEbkpVbHdEKzhFc3ZZZz09",
                 'asset_id'           => $this->request->getPost('asset_id'),
                 'requested_quantity' => $this->request->getPost('quantity'),
             ],
@@ -118,7 +150,7 @@ class AssetRequestController extends BaseController
             $response = $client->put(getAssetRequestApiUrl('/update/' . $id), [
                 'headers' => $headers,
                 'form_params' => [
-                    'employee_id'        => "cXQxV0RpNllHRWZJTENKTlNzU3g1QT09",
+                    'employee_id'        => "aUV2NThKSnBEbkpVbHdEKzhFc3ZZZz09",
                     'asset_id'           => $this->request->getPost('asset_id'),
                     'requested_quantity' => $this->request->getPost('requested_quantity'),
                 ],

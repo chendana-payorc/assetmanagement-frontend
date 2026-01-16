@@ -109,6 +109,30 @@ $routes->get('/assethistory-list', 'AssetHistoryController::index');
 
 $routes->get('uploads/organizations/(:any)', 'FileController::serve/$1');
 
+// ----------------- EMPLOYEE PANEL ROUTES -----------------
+$routes->get('employee-login', 'EmployeePanelController::login');
+$routes->post('employee-login', 'EmployeePanelController::loginPost');
+$routes->get('employee-logout', 'EmployeePanelController::logout');
+
+$routes->get('employee-dashboard', 'EmployeePanelController::dashboard');
+
+$routes->get('employee-asset-request', 'EmployeePanelController::requestAsset');
+$routes->post('employee-asset-request', 'EmployeePanelController::submitRequest');
+
+$routes->get('employee-my-requests', 'EmployeePanelController::myRequests');
+
+//$routes->get('employee-assigned-assets', 'EmployeePanelController::assignedAssets');
+
+
+$routes->get('/employee-request-asset', 'EmployeeRequestController::index');
+$routes->delete('/employee-request/delete/(:any)', 'EmployeeRequestController::delete/$1');
+$routes->get('/employee-request/assets', 'EmployeeRequestController::getAssets');
+$routes->post('employee-request/create', 'EmployeeRequestController::create');   // create request
+
+
+$routes->get('/employee/assigned-assets', 'EmployeeAssignedAssetController::index');
+
+
 
 
 

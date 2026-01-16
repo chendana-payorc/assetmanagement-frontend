@@ -13,53 +13,44 @@
 <div class="page-content fade-in-up">
 
     <!-- ================= FILTER SECTION ================= -->
-    <div class="card mb-4 shadow-sm p-3 bg-light rounded">
-        <form method="GET" action="<?= base_url('assetassignment-list') ?>">
-            <div class="row g-3 align-items-end">
-
-                <div class="col-md-3">
-                    <label class="form-label">Asset Name</label>
-                    <input type="text" name="asset_name" class="form-control" value="<?= esc($asset_name ?? '') ?>" placeholder="Search Asset Name">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Model</label>
-                    <input type="text" name="model" class="form-control" value="<?= esc($model ?? '') ?>" placeholder="Search Model">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Employee Name</label>
-                    <input type="text" name="employee_name" class="form-control" value="<?= esc($employee_name ?? '') ?>" placeholder="Search Employee">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Assigned Quantity</label>
-                    <input type="text" name="assigned_quantity" class="form-control" value="<?= esc($assigned_quantity ?? '') ?>" placeholder="Search Quantity">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Assigned Date</label>
-                    <input type="date" name="assigned_date" class="form-control" value="<?= esc($assigned_date ?? '') ?>">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">-- Select Status --</option>
-                        <option value="assigned" <?= (isset($status) && $status=='assigned') ? 'selected' : '' ?>>Assigned</option>
-                        <option value="returned" <?= (isset($status) && $status=='returned') ? 'selected' : '' ?>>Returned</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100 font-bold" id="applyFilter" title="Search">
-                        <i class="fa fa-search mx-2"></i>Search
-                    </button>
-                    <a href="<?= base_url('assetassignment-list') ?>" class="btn btn-secondary font-bold w-100">Reset</a>
-                </div>
-
+    <div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded">
+        <h5 class="pb-2 mb-2">Filters</h5>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <input type="text" name="asset_name" class="form-control" value="<?= esc($asset_name ?? '') ?>" placeholder="Search Asset Name">
             </div>
-        </form>
+
+            <div class="col-md-3">
+                <input type="text" name="model" class="form-control" value="<?= esc($model ?? '') ?>" placeholder="Search Model">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" name="employee_name" class="form-control" value="<?= esc($employee_name ?? '') ?>" placeholder="Search Employee">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" name="assigned_quantity" class="form-control" value="<?= esc($assigned_quantity ?? '') ?>" placeholder="Search Quantity">
+            </div>
+
+            <div class="col-md-3">
+                <input type="date" name="assigned_date" class="form-control" value="<?= esc($assigned_date ?? '') ?>">
+            </div>
+
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- Select Status --</option>
+                    <option value="assigned" <?= (isset($status) && $status=='assigned') ? 'selected' : '' ?>>Assigned</option>
+                    <option value="returned" <?= (isset($status) && $status=='returned') ? 'selected' : '' ?>>Returned</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button type="button" class="btn btn-primary w-100 font-bold" id="applyFilter" title="Search">
+                    <i class="fa fa-search mx-2"></i>Search
+                </button>
+                <a href="<?= base_url('assetassignment-list') ?>" class="btn btn-secondary font-bold w-100">Reset</a>
+            </div>
+        </div>
     </div>
     <!-- =============== END FILTER SECTION ================== -->
 
@@ -69,6 +60,7 @@
                 <thead>
                     <tr>
                         <th>Asset Name</th>
+                        <th>Asset ID</th>
                         <th>Model</th>
                         <th>Employee Name</th>
                         <th>Assigned Quantity</th>
@@ -81,6 +73,7 @@
                 <tfoot>
                     <tr>
                         <th>Asset Name</th>
+                        <th>Asset ID</th>
                         <th>Model</th>
                         <th>Employee Name</th>
                         <th>Assigned Quantity</th>
@@ -95,12 +88,19 @@
                         <?php foreach ($assignments as $a): ?>
                             <tr>
                                 <td><?= esc($a['asset_name']) ?></td>
+                                <td><?= esc($a['asset_code']) ?></td> 
                                 <td><?= esc($a['model']) ?></td>
                                 <td><?= esc($a['employee_name']) ?></td>
                                 <td><?= esc($a['assigned_quantity']) ?></td>
                                 <td><?= esc($a['assigned_date']) ?></td>
                                 <td><?= esc($a['handover_person'] ?? '-') ?></td>
-                                <td><?= esc($a['status']) === 'assigned' ? 'Assigned' : 'Returned' ?></td>
+                                <td>
+                                    <?php if (esc($a['status']) === 'assigned'): ?>
+                                        <span class="badge bg-success">Assigned</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning text-dark">Returned</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if (isset($a['status']) && $a['status'] === 'assigned'): ?>
                                         <button class="btn btn-sm btn-primary editBtn" title="Edit" data-id="<?= esc($a['id']) ?>">
@@ -119,10 +119,80 @@
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="8" class="text-center">No assignments found.</td></tr>
+                        <tr><td colspan="9" class="text-center">No assignments found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <?php
+            $limit = 5;
+            $currentPage = (int) ($_GET['page'] ?? 1);
+            $currentPage = $currentPage > 0 ? $currentPage : 1;
+            $currentPage = max(1, min($currentPage, $totalPages));
+            $lastPage = $totalPages;
+            $currentCount = count($assignments);
+
+            // Range for page numbers
+            $startPage = max(1, $currentPage - 1);
+            $endPage   = min($lastPage, $currentPage + 1);
+
+            // Showing text
+            $start = (($currentPage - 1) * $limit) + 1;
+            $end   = $start + $currentCount - 1;
+            ?>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <!-- Showing text -->
+                <div class="text-muted">
+                    Showing <?= $start ?>–<?= $end ?>
+                </div>
+
+                <nav>
+                    <ul class="pagination mb-0">
+                        <!-- First -->
+                        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" 
+                               href="<?= $currentPage > 1 ? base_url('assetassignment-list?page=1') : '#' ?>">
+                                First
+                            </a>
+                        </li>
+
+                        <!-- Prev -->
+                        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage > 1 ? base_url('assetassignment-list?page=' . ($currentPage - 1)) : '#' ?>">
+                                Prev
+                            </a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                            <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
+                                <a class="page-link"
+                                   href="<?= $i === $currentPage ? '#' : base_url('assetassignment-list?page=' . $i) ?>">
+                                    <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <!-- Next -->
+                        <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage < $lastPage ? base_url('assetassignment-list?page=' . ($currentPage + 1)) : '#' ?>">
+                                Next
+                            </a>
+                        </li>
+
+                        <!-- Last -->
+                        <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                               href="<?= $currentPage < $lastPage ? base_url('assetassignment-list?page=' . $lastPage) : '#' ?>">
+                                Last
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -190,141 +260,234 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 
-$(function () {
+$(document).ready(function() {
 
-    // Populate asset & employee selects
-    $('[data-bs-target="#addAssignmentCanvas"]').on('click', function () {
-        $('#assignmentForm')[0].reset();
-        $('#assetModel').val('');
-        loadAssets();
-        loadEmployees();
-    });
+let assignmentTable;
 
-    function loadAssets() {
-        $.get('<?= base_url('asset-list-json') ?>', function(res){
-            if (res && Array.isArray(res)) {
-                let html = '<option value="">-- Select Asset --</option>';
-                res.forEach(a => {
-                    html += `<option value="${a.id}" data-model="${a.model ?? ''}">${a.name} ${a.model ? ' - ' + a.model : ''}</option>`;
-                });
-                $('#assetSelect').html(html);
-            } else {
-                $('#assetSelect').html('<option value="">No assets</option>');
-            }
-        });
+initDataTable();
+
+function initDataTable() {
+    if ($.fn.DataTable.isDataTable('#assignment-table')) {
+        $('#assignment-table').DataTable().clear().destroy();
     }
 
-    function loadEmployees() {
-        $.get('<?= base_url('employee-list-json') ?>', function(res){
-            if (res && Array.isArray(res)) {
-                let html = '<option value="">-- Select Employee --</option>';
-                res.forEach(e => {
-                    html += `<option value="${e.id}">${e.name}</option>`;
-                });
-                $('#employeeSelect').html(html);
-            } else {
-                $('#employeeSelect').html('<option value="">No employees</option>');
+    assignmentTable = $('#assignment-table').DataTable({
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false
+    });
+}
+
+// Get current filter values from URL or form
+function getFilterParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        asset_name: $("input[name=asset_name]").val() || urlParams.get('asset_name') || '',
+        model: $("input[name=model]").val() || urlParams.get('model') || '',
+        employee_name: $("input[name=employee_name]").val() || urlParams.get('employee_name') || '',
+        assigned_quantity: $("input[name=assigned_quantity]").val() || urlParams.get('assigned_quantity') || '',
+        assigned_date: $("input[name=assigned_date]").val() || urlParams.get('assigned_date') || '',
+        status: $("select[name=status]").val() || urlParams.get('status') || ''
+    };
+}
+
+// Check if any filters are active
+function hasActiveFilters() {
+    const filters = getFilterParams();
+    return Object.values(filters).some(val => val !== '');
+}
+
+// Update pagination links with filter parameters
+function updatePaginationLinks() {
+    const filters = getFilterParams();
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+    
+    // Build query string
+    let queryString = '';
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+    });
+    
+    // Update all pagination links
+    $('.pagination .page-link').each(function() {
+        const $link = $(this);
+        const href = $link.attr('href');
+        
+        if (href && href !== '#') {
+            const url = new URL(href, window.location.origin);
+            const page = url.searchParams.get('page');
+            
+            if (page) {
+                $link.attr('href', `<?= base_url('assetassignment-list') ?>?page=${page}${queryString}`);
             }
-        });
-    }
-
-    $(document).on('change', '#assetSelect', function(){
-        let model = $(this).find('option:selected').data('model') || '';
-        $('#assetModel').val(model);
+        }
     });
+}
 
-    // Assign form
-    $(document).on('submit', '#assignmentForm', function(e){
-        e.preventDefault();
-        $.post('<?= base_url('assetassignment-store') ?>', $(this).serialize(), function(response){
-            if(response.success){
-                Swal.fire({icon:'success', title:'Assigned!', text: response.message, showConfirmButton:false, timer:1200})
-                    .then(()=> location.reload());
-            } else {
-                Swal.fire({icon:'error', title:'Error!', text: response.message});
-            }
-        }, 'json');
+$("#applyFilter").on("click", function () {
+    // Reset to page 1 when applying new filters
+    const filters = getFilterParams();
+    let queryString = 'page=1';
+    
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            queryString += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
     });
+    
+    // Redirect with filters in URL
+    window.location.href = `<?= base_url('assetassignment-list') ?>?${queryString}`;
+});
 
-    // Return button
-    $(document).on('click', '.returnBtn', function(){
-        let id = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This will mark the asset as returned.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, return it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: '<?= base_url('assetassignment-return') ?>/' + id,
-                    method: 'PUT',
-                    success: function(response) {
-                        Swal.fire({icon:'success', title:'Returned!', showConfirmButton:false, timer:1200})
-                        .then(()=> location.reload());
-                    }
-                });
-            }
-        });
+// Populate form fields from URL on page load
+function populateFiltersFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    $("input[name=asset_name]").val(urlParams.get('asset_name') || '');
+    $("input[name=model]").val(urlParams.get('model') || '');
+    $("input[name=employee_name]").val(urlParams.get('employee_name') || '');
+    $("input[name=assigned_quantity]").val(urlParams.get('assigned_quantity') || '');
+    $("input[name=assigned_date]").val(urlParams.get('assigned_date') || '');
+    $("select[name=status]").val(urlParams.get('status') || '');
+}
+
+// Initialize filters from URL
+populateFiltersFromURL();
+
+// Update pagination links if filters are active
+if (hasActiveFilters()) {
+    updatePaginationLinks();
+}
+
+// Populate asset & employee selects
+$('[data-bs-target="#addAssignmentCanvas"]').on('click', function () {
+    $('#assignmentForm')[0].reset();
+    $('#assetModel').val('');
+    loadAssets();
+    loadEmployees();
+});
+
+function loadAssets() {
+    $.get('<?= base_url('asset-list-json') ?>', function(res){
+        if (res && Array.isArray(res)) {
+            let html = '<option value="">-- Select Asset --</option>';
+            res.forEach(a => {
+                html += `<option value="${a.id}" data-model="${a.model ?? ''}">${a.name} ${a.model ? ' - ' + a.model : ''}</option>`;
+            });
+            $('#assetSelect').html(html);
+        } else {
+            $('#assetSelect').html('<option value="">No assets</option>');
+        }
     });
+}
 
-    // Edit button (UPDATED)
-    $(document).on('click', '.editBtn', function(){
-        let id = $(this).data('id');
-        $.get('<?= base_url('assetassignment-edit') ?>/' + id, function(html){
-            $('#editFormData').html(html);
-            let offcanvas = new bootstrap.Offcanvas(document.getElementById('editAssignmentCanvas'));
-            offcanvas.show();
-        });
+function loadEmployees() {
+    $.get('<?= base_url('employee-list-json') ?>', function(res){
+        if (res && Array.isArray(res)) {
+            let html = '<option value="">-- Select Employee --</option>';
+            res.forEach(e => {
+                html += `<option value="${e.id}">${e.name}</option>`;
+            });
+            $('#employeeSelect').html(html);
+        } else {
+            $('#employeeSelect').html('<option value="">No employees</option>');
+        }
     });
+}
 
-    // Update form
-    $(document).on('submit', '#assignmentEditForm', function(e){
-        e.preventDefault();
-        let id = $(this).find('input[name="assign_id"]').val();
-        $.post('<?= base_url('assetassignment-update') ?>/' + id, $(this).serialize(), function(response){
-            if(response.success){
-                Swal.fire({icon:'success', title:'Updated!', showConfirmButton:false, timer:1200})
+$(document).on('change', '#assetSelect', function(){
+    let model = $(this).find('option:selected').data('model') || '';
+    $('#assetModel').val(model);
+});
+
+// Assign form
+$(document).on('submit', '#assignmentForm', function(e){
+    e.preventDefault();
+    $.post('<?= base_url('assetassignment-store') ?>', $(this).serialize(), function(response){
+        if(response.success){
+            Swal.fire({icon:'success', title:'Assigned!', text: response.message, showConfirmButton:false, timer:1200})
                 .then(()=> location.reload());
-            } else {
-                Swal.fire({icon:'error', title:'Error!', text: response.message});
-            }
-        }, 'json');
-    });
+        } else {
+            Swal.fire({icon:'error', title:'Error!', text: response.message});
+        }
+    }, 'json');
+});
 
-    // Delete button
-    $(document).on('click', '.deleteBtn', function(){
-        let id = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This assignment will be permanently deleted.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result)=>{
-            if(result.isConfirmed){
-                $.ajax({
-                    url: '<?= base_url('assetassignment-delete') ?>/' + id,
-                    method: 'DELETE',
-                    success:function(response){
-                        Swal.fire({icon:'success', title:'Deleted!', showConfirmButton:false, timer:1200})
-                        .then(()=> location.reload());
-                    }
-                });
-            }
-        });
+// Return button
+$(document).on('click', '.returnBtn', function(){
+    let id = $(this).data('id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will mark the asset as returned.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, return it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '<?= base_url('assetassignment-return') ?>/' + id,
+                method: 'PUT',
+                success: function(response) {
+                    Swal.fire({icon:'success', title:'Returned!', showConfirmButton:false, timer:1200})
+                    .then(()=> location.reload());
+                }
+            });
+        }
     });
+});
 
-    function initDataTable(){
-        let table = $('#assignment-table');
-        if (!table.length) return;
-        if ($.fn.DataTable.isDataTable(table)) table.DataTable().destroy();
-        table.DataTable({pageLength:10, ordering:false, responsive:true});
-    }
-    initDataTable();
+// Edit button
+$(document).on('click', '.editBtn', function(){
+    let id = $(this).data('id');
+    $.get('<?= base_url('assetassignment-edit') ?>/' + id, function(html){
+        $('#editFormData').html(html);
+        let offcanvas = new bootstrap.Offcanvas(document.getElementById('editAssignmentCanvas'));
+        offcanvas.show();
+    });
+});
+
+// Update form
+$(document).on('submit', '#assignmentEditForm', function(e){
+    e.preventDefault();
+    let id = $(this).find('input[name="assign_id"]').val();
+    $.post('<?= base_url('assetassignment-update') ?>/' + id, $(this).serialize(), function(response){
+        if(response.success){
+            Swal.fire({icon:'success', title:'Updated!', showConfirmButton:false, timer:1200})
+            .then(()=> location.reload());
+        } else {
+            Swal.fire({icon:'error', title:'Error!', text: response.message});
+        }
+    }, 'json');
+});
+
+// Delete button
+$(document).on('click', '.deleteBtn', function(){
+    let id = $(this).data('id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This assignment will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result)=>{
+        if(result.isConfirmed){
+            $.ajax({
+                url: '<?= base_url('assetassignment-delete') ?>/' + id,
+                method: 'DELETE',
+                success:function(response){
+                    Swal.fire({icon:'success', title:'Deleted!', showConfirmButton:false, timer:1200})
+                    .then(()=> location.reload());
+                }
+            });
+        }
+    });
+});
 
 });
 </script>

@@ -1,10 +1,11 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('layouts/employee_main') ?>
 <?= $this->section('content') ?>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="page-heading d-flex justify-content-between">
-    <h1 class="page-title">Asset Request List</h1>
+    <h1 class="page-title">My Asset Requests</h1>
 
     <button class="btn btn-primary my-2 font-bold" 
         data-bs-toggle="offcanvas"
@@ -14,16 +15,9 @@
     </button>
 </div>
 
-<!-- ---------------- FILTER SECTION ---------------- -->
 <div class="row mx-2 mb-4 shadow-sm p-3 bg-light rounded">
     <h5 class="pb-2 mb-2">Filters</h5>
     <div class="row g-3 align-items-end">
-        <div class="col-md-4">
-            <input type="text" name="employee_name" class="form-control" 
-                   value="<?= esc($employee_name ?? '') ?>" 
-                   placeholder="Search Employee">
-        </div>
-
         <div class="col-md-4">
             <input type="text" name="asset_name" class="form-control" 
                    value="<?= esc($asset_name ?? '') ?>" 
@@ -40,23 +34,21 @@
             </select>
         </div>
 
-        <div class="col-md-2 d-flex gap-2">
+        <div class="col-md-3 d-flex gap-2">
             <button type="button" class="btn btn-primary w-100 font-bold" id="applyFilter">
                 <i class="fa fa-search mx-2"></i>Search
             </button>
-            <a href="<?= base_url('assetrequest-list') ?>" class="btn btn-secondary w-100 font-bold">Reset</a>
+            <a href="<?= base_url('employee-request-asset') ?>" class="btn btn-secondary w-100 font-bold">Reset</a>
         </div>
     </div>
 </div>
 
-<!-- ---------------- TABLE ---------------- -->
 <div class="page-content fade-in-up">
     <div class="ibox">
         <div class="ibox-body">
             <table class="table table-striped table-bordered" id="request-table">
                 <thead>
                     <tr>
-                        <th>Employee</th>
                         <th>Asset</th>
                         <th>Asset ID</th>
                         <th>Qty</th>
@@ -68,7 +60,6 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <th>Employee</th>
                         <th>Asset</th>
                         <th>Asset ID</th>
                         <th>Qty</th>
@@ -83,7 +74,6 @@
                     <?php if (!empty($requests)): ?>
                         <?php foreach ($requests as $row): ?>
                             <tr>
-                                <td><?= esc($row['employee_name']) ?></td>
                                 <td><?= esc($row['asset_name']) ?></td>
                                 <td><?= esc($row['asset_code']) ?></td>
                                 <td><?= esc($row['requested_quantity']) ?></td>
@@ -116,19 +106,18 @@
                                 <td><?= esc(date('d-m-Y H:i:s', strtotime($row['request_date']))) ?></td>
                                 <td><?= esc($row['remarks']) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary changeStatusBtn"
-                                            data-id="<?= $row['id'] ?>">
-                                        Change Status
-                                    </button>
-                                    <button class="btn btn-sm btn-danger deleteBtn"
-                                        data-id="<?= $row['id'] ?>">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                    <?php if($status === 'pending'): ?>
+                                        <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="text-muted">No actions</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="8" class="text-center">No requests found.</td></tr>
+                        <tr><td colspan="7" class="text-center">No requests found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -161,7 +150,7 @@
                         <!-- First -->
                         <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
                             <a class="page-link" 
-                               href="<?= $currentPage > 1 ? base_url('assetrequest-list?page=1') : '#' ?>">
+                               href="<?= $currentPage > 1 ? base_url('employee-request-asset?page=1') : '#' ?>">
                                 First
                             </a>
                         </li>
@@ -169,7 +158,7 @@
                         <!-- Prev -->
                         <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
                             <a class="page-link"
-                               href="<?= $currentPage > 1 ? base_url('assetrequest-list?page=' . ($currentPage - 1)) : '#' ?>">
+                               href="<?= $currentPage > 1 ? base_url('employee-request-asset?page=' . ($currentPage - 1)) : '#' ?>">
                                 Prev
                             </a>
                         </li>
@@ -178,7 +167,7 @@
                         <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                             <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
                                 <a class="page-link"
-                                   href="<?= $i === $currentPage ? '#' : base_url('assetrequest-list?page=' . $i) ?>">
+                                   href="<?= $i === $currentPage ? '#' : base_url('employee-request-asset?page=' . $i) ?>">
                                     <?= $i ?>
                                 </a>
                             </li>
@@ -187,7 +176,7 @@
                         <!-- Next -->
                         <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
                             <a class="page-link"
-                               href="<?= $currentPage < $lastPage ? base_url('assetrequest-list?page=' . ($currentPage + 1)) : '#' ?>">
+                               href="<?= $currentPage < $lastPage ? base_url('employee-request-asset?page=' . ($currentPage + 1)) : '#' ?>">
                                 Next
                             </a>
                         </li>
@@ -195,7 +184,7 @@
                         <!-- Last -->
                         <li class="page-item <?= $currentPage >= $lastPage ? 'disabled' : '' ?>">
                             <a class="page-link"
-                               href="<?= $currentPage < $lastPage ? base_url('assetrequest-list?page=' . $lastPage) : '#' ?>">
+                               href="<?= $currentPage < $lastPage ? base_url('employee-request-asset?page=' . $lastPage) : '#' ?>">
                                 Last
                             </a>
                         </li>
@@ -206,89 +195,43 @@
     </div>
 </div>
 
-<div class="modal fade" id="statusModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Update Request Status</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <input type="hidden" id="update_request_id">
-
-        <div class="form-group">
-          <label>Status</label>
-          <select id="update_status" class="form-control">
-            <option value="">--Select Status--</option>
-            <option value="accepted">Accept</option>
-            <option value="onhold">Hold</option>
-            <option value="denied">Deny</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Remarks</label>
-          <textarea row="4" column="10" class="form-control" id="remark"></textarea>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button class="btn btn-primary" id="saveStatusBtn">Save</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addRequestCanvas" aria-labelledby="addRequestCanvasLabel">
   <div class="offcanvas-header">
     <h5 id="addRequestCanvasLabel">Create Asset Request</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
   </div>
 
   <div class="offcanvas-body">
     <form id="requestForm">
-      <!-- Asset -->
+
       <div class="mb-3">
-        <label for="asset_id" class="form-label">Asset</label>
+        <label class="form-label">Asset</label>
         <select id="asset_id" name="asset_id" class="form-select" required>
           <option value="">Select Asset</option>
         </select>
       </div>
 
-      <!-- Quantity -->
       <div class="mb-3">
-        <label for="quantity" class="form-label">Request Quantity</label>
-        <input type="number" id="quantity" name="quantity" min="1" class="form-control" placeholder="Enter quantity" required>
+        <label class="form-label">Request Quantity</label>
+        <input type="number" id="quantity" name="quantity" min="1" class="form-control" required>
       </div>
 
-      <!-- Submit button -->
+      <div class="mb-3">
+        <label class="form-label">Remarks</label>
+        <textarea id="remarks" name="remarks" class="form-control"></textarea>
+      </div>
+
       <div class="text-end">
-        <button type="submit" id="requestSubmit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
       </div>
+
     </form>
   </div>
 </div>
 
-<div class="offcanvas offcanvas-end" tabindex="-1" id="editDepartmentCanvas" aria-labelledby="editDepartmentCanvasLabel">
-  <div class="offcanvas-header">
-    <h5 id="editDepartmentCanvasLabel">Update Asset Request</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <form id="requestForm">
-      <div id="editFormData"></div>
-      <div class="form-group">
-        <button class="btn btn-primary" type="submit" id="requestForm">Submit</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ---------------- JS SECTION ---------------- -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
 
+<script>
 $(document).ready(function () {
 
 let requestTable;
@@ -312,7 +255,6 @@ function initDataTable() {
 function getFilterParams() {
     const urlParams = new URLSearchParams(window.location.search);
     return {
-        employee_name: $("input[name=employee_name]").val() || urlParams.get('employee_name') || '',
         asset_name: $("input[name=asset_name]").val() || urlParams.get('asset_name') || '',
         status: $("select[name=status]").val() || urlParams.get('status') || ''
     };
@@ -348,7 +290,7 @@ function updatePaginationLinks() {
             const page = url.searchParams.get('page');
             
             if (page) {
-                $link.attr('href', `<?= base_url('assetrequest-list') ?>?page=${page}${queryString}`);
+                $link.attr('href', `<?= base_url('employee-request') ?>?page=${page}${queryString}`);
             }
         }
     });
@@ -366,14 +308,13 @@ $("#applyFilter").on("click", function () {
     });
     
     // Redirect with filters in URL
-    window.location.href = `<?= base_url('assetrequest-list') ?>?${queryString}`;
+    window.location.href = `<?= base_url('employee-request-asset') ?>?${queryString}`;
 });
 
 // Populate form fields from URL on page load
 function populateFiltersFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     
-    $("input[name=employee_name]").val(urlParams.get('employee_name') || '');
     $("input[name=asset_name]").val(urlParams.get('asset_name') || '');
     $("select[name=status]").val(urlParams.get('status') || '');
 }
@@ -386,14 +327,9 @@ if (hasActiveFilters()) {
     updatePaginationLinks();
 }
 
-// When offcanvas opens
-$('#addRequestCanvas').on('shown.bs.offcanvas', function () {
-    loadAssets();
-});
-
 function loadAssets() {
     $.ajax({
-        url: "<?= base_url('asset') ?>",
+        url: "<?= base_url('employee-request/assets') ?>",
         method: "GET",
         success: function (res) {
             if (res.success) {
@@ -407,72 +343,74 @@ function loadAssets() {
     });
 }
 
-// Submit Request Form (Create/Update)
-$(document).on('submit', '#requestForm', function (e) {
+$('#addRequestCanvas').on('shown.bs.offcanvas', function () {
+    loadAssets();
+});
+
+// SUBMIT REQUEST ------------------------
+$('#requestForm').submit(function(e) {
     e.preventDefault();
 
-    let id = $('#req_id').val();
-    let url = id 
-        ? '<?= base_url("request-update") ?>/' + id 
-        : '<?= base_url("request-store") ?>';
-
     $.ajax({
-        url: url,
+        url: "<?= base_url('employee-request/create') ?>",
         type: "POST",
-        data: $(this).serialize(),
-        success: function (response) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: response.message || 'Request saved successfully!',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+        data: {
+            asset_id: $('#asset_id').val(),
+            quantity: $('#quantity').val(),
+            remarks: $('#remarks').val()
         },
-        error: function (xhr) {
+        success: function(res) {
+            if(res.success){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: res.message
+                }).then(() => location.reload());
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: res.error || 'Error submitting request'
+                });
+            }
+        },
+        error: function(xhr) {
             Swal.fire({
                 icon: 'error',
-                title: 'Error!',
-                text: xhr.responseJSON?.error || 'Something went wrong!'
+                title: 'Error',
+                text: xhr.responseJSON?.error || 'Error submitting request'
             });
         }
     });
 });
 
-// Delete
+// DELETE REQUEST ------------------------
 $('.deleteBtn').click(function() {
     let id = $(this).data('id');
 
     Swal.fire({
-        title: 'Are you sure?',
-        text: "This Asset Request will be permanently deleted.",
-        icon: 'warning',
+        title: "Are you sure?",
+        text: "This request will be deleted permanently.",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: "Yes, delete it!"
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: "<?= base_url('request-delete') ?>/" + id,
+                url: "<?= base_url('/employee-request/delete') ?>/" + id,
                 type: "DELETE",
-                success: function(response) {
+                success: function(res) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: response.message || 'Deleted successfully!',
-                        showConfirmButton: false,
-                        timer: 1500
+                        text: res.message
                     }).then(() => location.reload());
                 },
                 error: function(xhr) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error!',
-                        text: xhr.responseJSON?.error || 'Failed to delete'
+                        title: 'Error',
+                        text: xhr.responseJSON?.error || 'Error deleting request'
                     });
                 }
             });
@@ -480,66 +418,7 @@ $('.deleteBtn').click(function() {
     });
 });
 
-$(document).on('click', '.changeStatusBtn', function () {
-    let id = $(this).data('id');
-    let currentStatus = $(this).data('current-status');
-
-    $("#update_request_id").val(id);
-    $("#update_status").val(currentStatus);
-
-    let modal = new bootstrap.Modal(document.getElementById('statusModal'));
-    modal.show();
 });
-
-$("#saveStatusBtn").click(function () {
-    let id = $("#update_request_id").val();
-    let status = $("#update_status").val();
-    let remark = $("#remark").val();
-
-    if (!status) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Select Status',
-            text: 'Please choose a status before saving.'
-        });
-        return;
-    }
-
-    $.ajax({
-        url: "<?= base_url('assetrequest-status') ?>",
-        type: "POST",
-        data: { id, status, remark },
-        success: function (res) {
-            if (res.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated Successfully',
-                    text: res.message || 'Status updated successfully',
-                    timer: 1800,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: res.message || 'Something went wrong'
-                });
-            }
-        },
-        error: function () {
-            Swal.fire({
-                icon: 'error',
-                title: 'Server Error',
-                text: 'Unable to update status'
-            });
-        }
-    });
-});
-
-});
-
 </script>
 
 <?= $this->endSection() ?>

@@ -7,50 +7,65 @@ use CodeIgniter\Controller;
 class DesignationController extends BaseController
 {
     public function index()
-
     {
         $token = session()->get('admin_token');
         if (!$token) {
             return redirect()->to('/login')->with('error', 'Please login first');
         }
+
+        helper('api');
+
+        // Get page from URL
+        $page = (int) $this->request->getGet('page');
+        $page = $page > 0 ? $page : 1;
+
+        // Fixed page size
+        $limit = 2;
+        $offset = ($page - 1) * $limit;
+
         $client = getApiClient();
         $headers = getApiHeaders();
         $apiBaseUrl = getDesignationApiUrl();
 
+        // Build query string with filters AND pagination
+        $queryParams = [
+            'limit' => $limit,
+            'offset' => $offset,
+            'name' => $this->request->getGet('name'),
+            'status' => $this->request->getGet('status'),
+        ];
 
-    $name   = $this->request->getGet('name');
-    $status = $this->request->getGet('status');
-
-    try {
-        $response = $client->get($apiBaseUrl . '/list', [
-            'headers' => $headers,
-        ]);
-
-        $result = json_decode($response->getBody(), true);
-        $designations = $result['data'] ?? [];
-
-        // Apply filters locally
-        if (!empty($name)) {
-            $designations = array_filter($designations, fn($d) => stripos($d['name'], $name) !== false);
-        }
-        if (!empty($status)) {
-          //  $designations = array_filter($designations, fn($d) => strtolower($d['status']) == strtolower($status));
-
-          $designations = array_filter($designations, function($d) use ($status) {
-            return ($status == 'active'  && $d['status'] == 1) ||
-                   ($status == 'inactive' && $d['status'] == 0);
+        // Remove empty parameters
+        $queryParams = array_filter($queryParams, function($value) {
+            return $value !== null && $value !== '';
         });
-        
-        }
 
-        return view('frontend/designation/designation-index',array_merge(
-            compact('designations', 'name', 'status'),
-            ['organizations' => $this->organizations]
-        ));
-    } catch (\Exception $e) {
-        return $this->response->setStatusCode(500)->setBody('Error fetching designations: ' . $e->getMessage());
+        $queryString = http_build_query($queryParams);
+
+        try {
+            // Get paginated data with filters
+            $response = $client->get($apiBaseUrl . '/list?' . $queryString, [
+                'headers' => $headers,
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+            $designations = $result['data'] ?? [];
+
+            // Total designations count from backend
+            $totalDesignations = $result['totalCount'] ?? 0;
+
+            // Pagination calculations
+            $totalPages = $totalDesignations > 0 ? ceil($totalDesignations / $limit) : 1;
+            $page = max(1, min($page, $totalPages));
+
+            return view('frontend/designation/designation-index', array_merge(
+                compact('designations', 'page', 'totalPages'),
+                ['organizations' => $this->organizations]
+            ));
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setBody('Error fetching designations: ' . $e->getMessage());
+        }
     }
-}
 
 
     public function store()
